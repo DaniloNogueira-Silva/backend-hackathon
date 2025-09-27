@@ -145,22 +145,35 @@ export class AutorizacoesExameService {
     return resultado;
   }
 
-  private async generateUniqueCode(): Promise<string> {
-    const code = `AUT-${randomBytes(4).toString('hex').toUpperCase()}`;
-    const exists = await this.prisma.autorizacaoExame.findUnique({
-      where: { codigo: code },
-    });
-    if (exists) {
-      return this.generateUniqueCode();
-    }
-    return code;
-  }
-
   async findAll() {
     return this.prisma.autorizacaoExame.findMany({
-      include: {
-        paciente: { select: { usuario: { select: { nome: true } } } },
-        medico: { select: { usuario: { select: { nome: true } } } },
+      select: {
+        id: true,
+        status: true,
+        exame: true,
+        tipo: true,
+        criadoEm: true,
+        liberadoEm: true,
+        codigo: true,
+
+        paciente: {
+          select: {
+            usuario: {
+              select: {
+                nome: true,
+              },
+            },
+          },
+        },
+        medico: {
+          select: {
+            usuario: {
+              select: {
+                nome: true,
+              },
+            },
+          },
+        },
       },
     });
   }

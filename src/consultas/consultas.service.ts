@@ -72,7 +72,7 @@ export class ConsultasService {
       include: {
         paciente: { select: { id: true, usuario: { select: { nome: true } } } },
         medico: {
-          select: { id: true, usuario: { select: { nome: true } } },
+          select: { id: true, especialidade: true, usuario: { select: { nome: true }, } },
         },
       }
     });
