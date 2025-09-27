@@ -11,11 +11,15 @@ import {
   ParseFilePipe,
   MaxFileSizeValidator,
   FileTypeValidator,
+  Request,
+  UseGuards,
 } from '@nestjs/common';
 import { AutorizacoesExameService } from './autorizacoes-exame.service';
 import { CreateAutorizacaoExameDto } from './dto/create-autorizacoes-exame.dto';
 import { UpdateAutorizacaoExameDto } from './dto/update-autorizacoes-exame.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
+
 
 @Controller('autorizacoes-exame')
 export class AutorizacoesExameController {
@@ -39,9 +43,12 @@ export class AutorizacoesExameController {
     return this.autorizacoesExameService.processarPdfEExtrairDados(imagem);
   }
 
+  @UseGuards(JwtAuthGuard)
   @Get()
-  findAll() {
-    return this.autorizacoesExameService.findAll();
+  findAll(@Request() req) {
+    const userId = req.user.perfilId;
+
+    return this.autorizacoesExameService.findAll(userId);
   }
 
   @Get(':id')

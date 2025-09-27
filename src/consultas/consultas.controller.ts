@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Param, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, UseGuards, Request, Query } from '@nestjs/common';
 import { ConsultasService } from './consultas.service';
 import { CreateConsultaDto } from './dto/create-consulta.dto';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
@@ -15,8 +15,11 @@ export class ConsultasController {
   }
 
   @Get()
-  findAll() {
-    return this.consultasService.findAll();
+  findAll(@Request() req,
+    @Query('status') status?: string) {
+    const userId = req.user.perfilId;
+
+    return this.consultasService.findAll(userId, status);
   }
 
   @Get(':id')

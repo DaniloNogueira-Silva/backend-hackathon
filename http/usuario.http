@@ -2,7 +2,7 @@
 curl -X POST http://localhost:3000/auth/login \
 -H "Content-Type: application/json" \
 -d '{
-  "email": "joao.paciente@email.com",
+  "email": "cecilia.nair@email.com",
   "senha": "senhaSegura123"
 }'
 

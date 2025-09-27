@@ -3,6 +3,7 @@ import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { UsuariosService } from 'src/usuarios/usuarios.service';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
+import { Perfil } from '@prisma/client';
 
 @Injectable()
 export class AuthService {
@@ -34,7 +35,22 @@ export class AuthService {
    * @returns Um objeto contendo o token de acesso.
    */
   async login(usuario: any) {
-    const payload = { email: usuario.email, sub: usuario.id, perfil: usuario.perfil };
+    // 1. Inicia a variável do ID do perfil como nula
+    let perfilId: string | null = null;
+
+    if (usuario.perfil === Perfil.PACIENTE && usuario.perfilPaciente) {
+      perfilId = usuario.perfilPaciente.id;
+    } else if (usuario.perfil === Perfil.MEDICO && usuario.perfilMedico) {
+      perfilId = usuario.perfilMedico.id;
+    }
+
+    const payload = {
+      email: usuario.email,
+      sub: usuario.id, // 'sub' (subject) é o padrão para o ID do usuário no JWT
+      perfil: usuario.perfil,
+      perfilId: perfilId, // Adiciona o ID do perfil (ou null) ao payload
+    };
+
     return {
       access_token: this.jwtService.sign(payload),
     };

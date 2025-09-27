@@ -145,7 +145,7 @@ export class AutorizacoesExameService {
     return resultado;
   }
 
-  async findAll() {
+  async findAll(userId) {
     return this.prisma.autorizacaoExame.findMany({
       select: {
         id: true,
@@ -174,6 +174,12 @@ export class AutorizacoesExameService {
             },
           },
         },
+      },
+      where: {
+        OR: [
+          { pacienteId: userId },
+          { medicoId: userId },
+        ],
       },
     });
   }

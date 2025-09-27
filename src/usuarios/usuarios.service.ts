@@ -99,6 +99,7 @@ export class UsuariosService {
   async findOneByEmail(email: string) {
     return this.prisma.usuario.findUnique({
       where: { email },
+      include: { perfilPaciente: true, perfilMedico: true },
     });
   }
 

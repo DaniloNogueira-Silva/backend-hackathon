@@ -2,6 +2,7 @@ import { ConflictException, Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateConsultaDto } from './dto/create-consulta.dto';
 import { MedicoMaxConsultasException } from './exceptions/medico-max-consultas.exception';
+import { Prisma, StatusConsulta } from '@prisma/client';
 
 @Injectable()
 export class ConsultasService {
@@ -67,14 +68,24 @@ export class ConsultasService {
     });
   }
 
-  async findAll() {
+  async findAll(userId: string, status?: string) {
+    const where: Prisma.ConsultaWhereInput = {
+      OR: [
+        { pacienteId: userId },
+        { medicoId: userId },
+      ],
+    };
+
+    if (status) {
+      where.status = status as StatusConsulta; 
+    }
+
     return this.prisma.consulta.findMany({
+      where, 
       include: {
-        paciente: { select: { id: true, usuario: { select: { nome: true } } } },
-        medico: {
-          select: { id: true, especialidade: true, usuario: { select: { nome: true }, } },
-        },
-      }
+        paciente: { select: { usuario: { select: { nome: true } } } },
+        medico: { select: { usuario: { select: { nome: true } } } },
+      },
     });
   }
 
