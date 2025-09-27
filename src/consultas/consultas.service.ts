@@ -6,7 +6,7 @@ import { Prisma, StatusConsulta } from '@prisma/client';
 
 @Injectable()
 export class ConsultasService {
-  constructor(private prisma: PrismaService) { }
+  constructor(private prisma: PrismaService) {}
 
   async create(dto: CreateConsultaDto) {
     const { dataHoraInicio, pacienteId, medicoId, duracaoEmMinutos } = dto;
@@ -15,7 +15,6 @@ export class ConsultasService {
     const dataInicio = new Date(dataHoraInicio);
     const dataFim = new Date(dataInicio);
     dataFim.setMinutes(dataInicio.getMinutes() + duracao);
-
 
     const inicioDoDia = new Date(dataInicio);
     inicioDoDia.setHours(0, 0, 0, 0);
@@ -46,8 +45,8 @@ export class ConsultasService {
           gt: dataInicio,
         },
         status: {
-          not: 'CANCELADA'
-        }
+          not: 'CANCELADA',
+        },
       },
     });
 
@@ -56,7 +55,6 @@ export class ConsultasService {
         'O médico já possui uma consulta agendada neste horário.',
       );
     }
-
 
     return this.prisma.consulta.create({
       data: {
@@ -70,23 +68,31 @@ export class ConsultasService {
 
   async findAll(userId: string, status?: string) {
     const where: Prisma.ConsultaWhereInput = {
-      OR: [
-        { pacienteId: userId },
-        { medicoId: userId },
-      ],
+      OR: [{ pacienteId: userId }, { medicoId: userId }],
     };
 
     if (status) {
-      where.status = status as StatusConsulta; 
+      where.status = status as StatusConsulta;
     }
 
-    return this.prisma.consulta.findMany({
-      where, 
+    const consultas = await this.prisma.consulta.findMany({
+      where,
       include: {
         paciente: { select: { usuario: { select: { nome: true } } } },
         medico: { select: { usuario: { select: { nome: true } } } },
       },
     });
+
+    // Ajusta os horários (subtrai 3h)
+    return consultas.map((c) => ({
+      ...c,
+      data_hora_inicio: c.dataHoraInicio
+        ? new Date(new Date(c.dataHoraInicio).getTime() - 3 * 60 * 60 * 1000)
+        : null,
+      data_hora_fim: c.dataHoraFim
+        ? new Date(new Date(c.dataHoraFim).getTime() - 3 * 60 * 60 * 1000)
+        : null,
+    }));
   }
 
   async findOne(id: string) {
@@ -98,5 +104,4 @@ export class ConsultasService {
       },
     });
   }
-
 }

@@ -6,7 +6,7 @@ import { Perfil, Prisma, Usuario } from '@prisma/client';
 
 @Injectable()
 export class MedicosService {
-  constructor(private prisma: PrismaService) { }
+  constructor(private prisma: PrismaService) {}
 
   async create(dto: CreateMedicoDto) {
     const hashSenha = await bcrypt.hash(dto.senha, 10);
@@ -91,7 +91,36 @@ export class MedicosService {
     return this.prisma.usuario.findFirst({
       where: { perfilMedico: { crm: crm } },
       include: {
-        perfilMedico: true, 
+        perfilMedico: true,
+      },
+    });
+  }
+
+  async findByNomeOuEspecialidade(termo: string) {
+    const termoNormalizado = termo.toLowerCase();
+
+    return this.prisma.usuario.findMany({
+      where: {
+        perfil: Perfil.MEDICO,
+        OR: [
+          {
+            nome: {
+              contains: termoNormalizado,
+              mode: 'insensitive',
+            },
+          },
+          {
+            perfilMedico: {
+              especialidade: {
+                contains: termoNormalizado,
+                mode: 'insensitive',
+              },
+            },
+          },
+        ],
+      },
+      include: {
+        perfilMedico: true,
       },
     });
   }
