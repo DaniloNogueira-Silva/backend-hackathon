@@ -13,9 +13,16 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum StatusConsulta {
+  AGENDADA
+  REALIZADA
+  CANCELADA
+}
+
 enum Perfil {
   ADMIN
   PACIENTE
+  MEDICO
 }
 
 model Usuario {
@@ -29,6 +36,10 @@ model Usuario {
   atualizadoEm DateTime @updatedAt @map("atualizado_em")
 
   perfilPaciente PerfilPaciente?
+  perfilMedico   PerfilMedico?
+
+  consultasComoPaciente Consulta[] @relation("ConsultaPaciente")
+  consultasComoMedico   Consulta[] @relation("ConsultaMedico")
 
   @@map("usuarios")
 }
@@ -44,9 +55,8 @@ model PerfilPaciente {
   criadoEm     DateTime @default(now()) @map("criado_em")
   atualizadoEm DateTime @updatedAt @map("atualizado_em")
 
-  usuarioId String @unique @map("usuario_id")
-
-  usuario Usuario @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  usuarioId String  @unique @map("usuario_id")
+  usuario   Usuario @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
 }
 
 model FluxoPasso {
@@ -73,8 +83,8 @@ model Interacao {
 }
 
 model RolProcedimento {
-  id                  Int     @id @default(autoincrement())
-  codigo              String  @db.VarChar(20)
+  id                  Int      @id @default(autoincrement())
+  codigo              String   @db.VarChar(20)
   terminologia        String
   correlacao          Boolean?
   procedimento        String?
@@ -89,5 +99,34 @@ model RolProcedimento {
   subgrupo            String?
   grupo               String?
   capitulo            String?
-  tipo                String  @db.VarChar(20)
+  tipo                String   @db.VarChar(20)
+}
+
+model PerfilMedico {
+  id            String @id @default(uuid())
+  crm           String @unique
+  especialidade String
+
+  criadoEm     DateTime @default(now()) @map("criado_em")
+  atualizadoEm DateTime @updatedAt @map("atualizado_em")
+  usuarioId    String   @unique @map("usuario_id")
+  usuario      Usuario  @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+}
+
+model Consulta {
+  id        String         @id @default(uuid())
+  dataHora  DateTime       @map("data_hora")
+  status    StatusConsulta @default(AGENDADA)
+  anotacoes String?
+
+  criadoEm     DateTime @default(now()) @map("criado_em")
+  atualizadoEm DateTime @updatedAt @map("atualizado_em")
+
+  pacienteId String  @map("paciente_id")
+  paciente   Usuario @relation("ConsultaPaciente", fields: [pacienteId], references: [id])
+
+  medicoId String  @map("medico_id")
+  medico   Usuario @relation("ConsultaMedico", fields: [medicoId], references: [id])
+
+  @@map("consultas")
 }
