@@ -6,7 +6,6 @@
 
 generator client {
   provider = "prisma-client-js"
-  output   = "../generated/prisma"
 }
 
 datasource db {
@@ -47,6 +46,47 @@ model PerfilPaciente {
   usuarioId String @unique @map("usuario_id")
 
   usuario Usuario @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+}
 
-  @@map("perfis_paciente")
+model FluxoPasso {
+  id             Int     @id @default(autoincrement())
+  numeroPasso    Int     @unique
+  descricaoAcao  String  @db.Text
+  quemAtor       String
+  comoDetalhe    String  @db.Text
+  proximoPassoId Int?
+  isDecisao      Boolean @default(false)
+  passoSimId     Int?
+  passoNaoId     Int?
+
+  @@map("fluxo_passo")
+}
+
+model Interacao {
+  id          Int      @id @default(autoincrement())
+  pergunta    String   @db.Text
+  respostaIA  String   @db.Text
+  dataCriacao DateTime @default(now())
+
+  @@map("interacoes_chat")
+}
+
+model RolProcedimento {
+  id                  Int     @id @default(autoincrement())
+  codigo              String  @db.VarChar(20)
+  terminologia        String
+  correlacao          Boolean?
+  procedimento        String?
+  resolucao_normativa String?
+  vigencia            String?
+  od                  String?
+  amb                 String?
+  hco                 String?
+  hso                 String?
+  pac                 String?
+  dut                 String?
+  subgrupo            String?
+  grupo               String?
+  capitulo            String?
+  tipo                String  @db.VarChar(20)
 }

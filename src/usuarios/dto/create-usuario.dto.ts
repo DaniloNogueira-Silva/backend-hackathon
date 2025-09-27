@@ -10,7 +10,8 @@ import {
     ValidateNested,
 } from 'class-validator';
 import { CreatePerfilPacienteDto } from './create-perfil-pacient.dto';
-import { Perfil } from 'generated/prisma';
+import { Perfil } from '@prisma/client';
+
 
 export class CreateUsuarioDto {
     @IsEmail()
