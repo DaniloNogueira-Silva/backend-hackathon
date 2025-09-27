@@ -6,6 +6,8 @@ import { ConfigModule } from '@nestjs/config';
 import { AuthModule } from './auth/auth.module';
 import { MedicosModule } from './medicos/medicos.module';
 import { ConsultasModule } from './consultas/consultas.module';
+import { AutorizacoesExameModule } from './autorizacoes-exame/autorizacoes-exame.module';
+import { rolProcedimentosModule } from './rol-procedimentos/rol-procedimentos.module';
 
 @Module({
   imports: [
@@ -15,7 +17,9 @@ import { ConsultasModule } from './consultas/consultas.module';
     UsuariosModule,
     AuthModule,
     MedicosModule,
-    ConsultasModule
+    ConsultasModule,
+    AutorizacoesExameModule,
+    rolProcedimentosModule
   ],
 })
 export class AppModule {}

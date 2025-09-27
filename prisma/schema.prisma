@@ -20,9 +20,14 @@ enum StatusConsulta {
 }
 
 enum Perfil {
-  ADMIN
   PACIENTE
   MEDICO
+}
+
+enum StatusAutorizacao {
+  PENDENTE
+  APROVADA
+  NEGADA
 }
 
 model Usuario {
@@ -35,9 +40,8 @@ model Usuario {
   criadoEm     DateTime @default(now()) @map("criado_em")
   atualizadoEm DateTime @updatedAt @map("atualizado_em")
 
-  perfilPaciente PerfilPaciente?
-  perfilMedico   PerfilMedico?
-  Consulta       Consulta[]
+  perfilPaciente   PerfilPaciente?
+  perfilMedico     PerfilMedico?
 
   @@map("usuarios")
 }
@@ -56,7 +60,9 @@ model PerfilPaciente {
   usuarioId String  @unique @map("usuario_id")
   usuario   Usuario @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
 
-  consultasComoPaciente Consulta[] @relation("ConsultaPaciente")
+  consultasComoPaciente    Consulta[]         @relation("ConsultaPaciente")
+  autorizacoesComoPaciente AutorizacaoExame[] @relation("AutorizacaoPaciente")
+  AutorizacaoExame         AutorizacaoExame[]
 }
 
 model FluxoPasso {
@@ -65,7 +71,7 @@ model FluxoPasso {
   descricaoAcao  String  @db.Text
   quemAtor       String
   comoDetalhe    String  @db.Text
-  canal          String  
+  canal          String
   proximoPassoId Int?
   isDecisao      Boolean @default(false)
   passoSimId     Int?
@@ -114,7 +120,9 @@ model PerfilMedico {
   usuario      Usuario    @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
   Consulta     Consulta[]
 
-  consultasComoMedico Consulta[] @relation("ConsultaMedico")
+  consultasComoMedico    Consulta[]         @relation("ConsultaMedico")
+  autorizacoesComoMedico AutorizacaoExame[] @relation("AutorizacaoMedico")
+  AutorizacaoExame       AutorizacaoExame[]
 }
 
 model Consulta {
@@ -133,11 +141,39 @@ model Consulta {
   medicoId String       @map("medico_id")
   medico   PerfilMedico @relation("ConsultaMedico", fields: [medicoId], references: [id])
 
-  Usuario   Usuario? @relation(fields: [usuarioId], references: [id])
-  usuarioId String?
-
-  PerfilMedico   PerfilMedico? @relation(fields: [perfilMedicoId], references: [id])
-  perfilMedicoId String?
+  PerfilMedico     PerfilMedico?      @relation(fields: [perfilMedicoId], references: [id])
+  perfilMedicoId   String?
+  AutorizacaoExame AutorizacaoExame[]
 
   @@map("consultas")
+}
+
+model AutorizacaoExame {
+  id         String            @id @default(uuid())
+  codigo     String            @unique // Um código único para a autorização, ex: "AUT-2025-ABCD"
+  exame      String
+  status     StatusAutorizacao @default(PENDENTE)
+  tipo       String
+  liberadoEm DateTime?         @map("liberado_em")
+
+  criadoEm     DateTime @default(now()) @map("criado_em")
+  atualizadoEm DateTime @updatedAt @map("atualizado_em")
+
+  // Relacionamento com o Paciente (Usuario)
+  pacienteId String         @map("paciente_id")
+  paciente   PerfilPaciente @relation("AutorizacaoPaciente", fields: [pacienteId], references: [id])
+
+  // Relacionamento com o Médico (Usuario)
+  medicoId String       @map("medico_id")
+  medico   PerfilMedico @relation("AutorizacaoMedico", fields: [medicoId], references: [id])
+
+  // Relacionamento opcional com a Consulta
+  consultaId       String?         @map("consulta_id")
+  consulta         Consulta?       @relation(fields: [consultaId], references: [id], onDelete: SetNull)
+  PerfilPaciente   PerfilPaciente? @relation(fields: [perfilPacienteId], references: [id])
+  perfilPacienteId String?
+  PerfilMedico     PerfilMedico?   @relation(fields: [perfilMedicoId], references: [id])
+  perfilMedicoId   String?
+
+  @@map("autorizacoes_exame")
 }

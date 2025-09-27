@@ -2,7 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateMedicoDto } from './dto/create-medico.dto';
 import * as bcrypt from 'bcrypt';
-import { Perfil, Prisma } from '@prisma/client';
+import { Perfil, Prisma, Usuario } from '@prisma/client';
 
 @Injectable()
 export class MedicosService {
@@ -83,6 +83,15 @@ export class MedicosService {
       },
       include: {
         perfilMedico: true,
+      },
+    });
+  }
+
+  async findByCRM(crm: string) {
+    return this.prisma.usuario.findFirst({
+      where: { perfilMedico: { crm: crm } },
+      include: {
+        perfilMedico: true, 
       },
     });
   }

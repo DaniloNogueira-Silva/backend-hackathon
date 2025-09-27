@@ -12,14 +12,14 @@ curl -X POST http://localhost:3000/auth/login \
 curl -X POST http://localhost:3000/usuarios \
 -H "Content-Type: application/json" \
 -d '{
-  "email": "joao.paciente@email.com",
-  "nome": "João da Silva",
+  "email": "cecilia.nair@email.com",
+  "nome": "Cecília Nair Silva",
   "senha": "senhaSegura123",
   "perfil": "PACIENTE",
   "perfilPaciente": {
     "dataNascimento": "1985-07-20",
-    "numeroProntuario": "PRONT-001",
-    "cpf": "031.627.020-20",
+    "numeroProntuario": "PRONT-002",
+    "cpf": "031.627.020-21",
     "telefoneContato": "11999998888",
     "endereco": "Rua dos Pacientes, 123"
   }
