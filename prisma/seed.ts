@@ -2,14 +2,13 @@ import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
-// Dados do Fluxo 1: Atualização de Dados
 const fluxoAtualizacaoDados = [
   {
     numeroPasso: 1,
     descricaoAcao: 'Fornecer as informações necessárias',
     quemAtor: 'Beneficiário',
     comoDetalhe: 'CPF, dados a serem atualizados (dados pessoais ou endereço)',
-    canal: 'Via whatsapp',
+    canal: 'Via ChatBot',
     isDecisao: false,
     proximoPassoId: 2,
     passoSimId: null,
@@ -20,7 +19,7 @@ const fluxoAtualizacaoDados = [
     descricaoAcao: 'Enviar documentação comprobatória',
     quemAtor: 'Beneficiário',
     comoDetalhe: 'Anexar',
-    canal: 'Via whatsapp',
+    canal: 'Via ChatBot',
     isDecisao: false,
     proximoPassoId: 3,
     passoSimId: null,
@@ -52,8 +51,8 @@ const fluxoAtualizacaoDados = [
     numeroPasso: 5,
     descricaoAcao: 'Informar beneficiário',
     quemAtor: 'Atendimento',
-    comoDetalhe: 'Via whatsapp',
-    canal: 'Via whatsapp',
+    comoDetalhe: 'Via ChatBot',
+    canal: 'Via ChatBot',
     isDecisao: false,
     proximoPassoId: null,
     passoSimId: null,
@@ -61,7 +60,6 @@ const fluxoAtualizacaoDados = [
   },
 ];
 
-// Dados do Fluxo 2: Cobrança Indevida
 const fluxoCobrancaIndevida = [
   {
     numeroPasso: 6,
@@ -155,9 +153,7 @@ const fluxoCobrancaIndevida = [
   },
 ];
 
-// Dados do Fluxo 3: Registro de Documentos
 const fluxoRegistroDocumentos = [
-  // Nota: Cliente solicita / Processo realizado presencialmente
   {
     numeroPasso: 14,
     descricaoAcao: 'Solicitar documentos',
@@ -248,7 +244,6 @@ const fluxoRegistroDocumentos = [
   },
 ];
 
-// Dados do NOVO Fluxo 4: Emissão de 2ª Via (Inicia em 22)
 const fluxoEmissao2aVia = [
   {
     numeroPasso: 22,
@@ -296,7 +291,6 @@ const fluxoEmissao2aVia = [
   },
 ];
 
-// Dados do Fluxo 5: Autorização de Procedimentos
 const fluxoAutorizacaoProcedimentos = [
   {
     numeroPasso: 26,
@@ -304,7 +298,7 @@ const fluxoAutorizacaoProcedimentos = [
     quemAtor: 'Beneficiário',
     comoDetalhe:
       'Via texto: nome completo, data de nascimento e foto do pedido médico',
-    canal: 'Whatsapp ou Presencialmente',
+    canal: 'ChatBot ou Presencialmente',
     isDecisao: false,
     proximoPassoId: 27,
     passoSimId: null,
@@ -349,7 +343,7 @@ const fluxoAutorizacaoProcedimentos = [
     numeroPasso: 30,
     descricaoAcao: 'Monitorar status da guia',
     quemAtor: 'Beneficiário',
-    comoDetalhe: 'Via aplicativo, ligação ou whatsapp',
+    comoDetalhe: 'Via aplicativo, ligação ou ChatBot',
     canal: 'Beneficiário',
     isDecisao: false,
     proximoPassoId: 32,
@@ -391,7 +385,6 @@ const fluxoAutorizacaoProcedimentos = [
   },
 ];
 
-// Dados do Fluxo 6: Troca de Titularidade
 const fluxoTrocaTitularidade = [
   {
     numeroPasso: 34,
@@ -499,20 +492,19 @@ const fluxoTrocaTitularidade = [
     comoDetalhe: 'Via telefone e onzap',
     canal: 'Telefone e onzap',
     isDecisao: false,
-    proximoPassoId: 35,
+    proximoPassoId: 37  ,
     passoSimId: null,
     passoNaoId: null,
   },
 ];
 
-// Dados do Fluxo 7: Agendamento de Consultas
 const fluxoAgendamentoConsultas = [
-  // Caminho 1: Beneficiário via aplicativo
   {
     numeroPasso: 44,
     descricaoAcao: 'Buscar agenda disponível',
     quemAtor: 'Beneficiário',
-    comoDetalhe: 'Via aplicativo, filtrando cidade, especialidade, médico (opcional) e data',
+    comoDetalhe:
+      'Via aplicativo, filtrando cidade, especialidade, médico (opcional) e data',
     canal: 'Aplicativo',
     isDecisao: false,
     proximoPassoId: 45,
@@ -553,13 +545,12 @@ const fluxoAgendamentoConsultas = [
     passoNaoId: null,
   },
 
-  // Caminho 2: Beneficiário via atendimento (Unigente)
   {
     numeroPasso: 48,
     descricaoAcao: 'Entrar em contato',
     quemAtor: 'Beneficiário',
-    comoDetalhe: 'Via whatsapp ou ligação telefônica',
-    canal: 'Whatsapp ou telefone',
+    comoDetalhe: 'Via ChatBot ou ligação telefônica',
+    canal: 'ChatBot ou telefone',
     isDecisao: false,
     proximoPassoId: 49,
     passoSimId: null,
@@ -569,8 +560,9 @@ const fluxoAgendamentoConsultas = [
     numeroPasso: 49,
     descricaoAcao: 'Passar as informações necessárias',
     quemAtor: 'Beneficiário',
-    comoDetalhe: 'Via texto ou voz: Nome completo, data de nascimento, especialidade e motivo da consulta',
-    canal: 'Whatsapp ou telefone',
+    comoDetalhe:
+      'Via texto ou voz: Nome completo, data de nascimento, especialidade e motivo da consulta',
+    canal: 'ChatBot ou telefone',
     isDecisao: false,
     proximoPassoId: 50,
     passoSimId: null,
@@ -602,7 +594,8 @@ const fluxoAgendamentoConsultas = [
     numeroPasso: 52,
     descricaoAcao: 'Confirmar dados do agendamento',
     quemAtor: 'Atendimento',
-    comoDetalhe: 'Via texto ou voz, informando dia, horário, médico, endereço e protocolo da solicitação',
+    comoDetalhe:
+      'Via texto ou voz, informando dia, horário, médico, endereço e protocolo da solicitação',
     canal: 'Atendimento',
     isDecisao: false,
     proximoPassoId: 53,
@@ -622,25 +615,20 @@ const fluxoAgendamentoConsultas = [
   },
 ];
 
-
 async function main() {
-  console.log(`Iniciando o seeding para 4 fluxos...`);
-
   await prisma.fluxoPasso.deleteMany();
   console.log(`Registros FluxoPasso existentes deletados.`);
 
-  // Combina todos os dados em um único array
   const todosOsFluxos = [
     ...fluxoAtualizacaoDados,
     ...fluxoCobrancaIndevida,
     ...fluxoRegistroDocumentos,
-    ...fluxoEmissao2aVia, 
+    ...fluxoEmissao2aVia,
     ...fluxoAutorizacaoProcedimentos,
     ...fluxoTrocaTitularidade,
-    ...fluxoAgendamentoConsultas
+    ...fluxoAgendamentoConsultas,
   ];
 
-  // Inserção de todos os fluxos
   for (const passoData of todosOsFluxos) {
     await prisma.fluxoPasso.create({ data: passoData });
   }
