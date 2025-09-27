@@ -65,6 +65,7 @@ model FluxoPasso {
   descricaoAcao  String  @db.Text
   quemAtor       String
   comoDetalhe    String  @db.Text
+  canal          String  
   proximoPassoId Int?
   isDecisao      Boolean @default(false)
   passoSimId     Int?
@@ -100,7 +101,6 @@ model RolProcedimento {
   grupo               String?
   capitulo            String?
   tipo                String   @db.VarChar(20)
-
 }
 
 model PerfilMedico {

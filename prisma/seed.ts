@@ -1,60 +1,59 @@
 import { PrismaClient } from '@prisma/client';
 
-// Inicializa o cliente Prisma
 const prisma = new PrismaClient();
 
-// Dados do seu primeiro fluxo (Fluxo de Atualização de Dados)
+// Dados do Fluxo 1: Atualização de Dados
 const fluxoAtualizacaoDados = [
-  // Passo 1: Início
   {
     numeroPasso: 1,
     descricaoAcao: 'Fornecer as informações necessárias',
     quemAtor: 'Beneficiário',
     comoDetalhe: 'CPF, dados a serem atualizados (dados pessoais ou endereço)',
+    canal: 'Via whatsapp',
     isDecisao: false,
     proximoPassoId: 2,
     passoSimId: null,
     passoNaoId: null,
   },
-  // Passo 2: Enviar Doc
   {
     numeroPasso: 2,
     descricaoAcao: 'Enviar documentação comprobatória',
     quemAtor: 'Beneficiário',
     comoDetalhe: 'Anexar',
+    canal: 'Via whatsapp',
     isDecisao: false,
     proximoPassoId: 3,
     passoSimId: null,
     passoNaoId: null,
   },
-  // Passo 3: Decisão
   {
     numeroPasso: 3,
     descricaoAcao: 'Verificar Informações',
     quemAtor: 'Atendimento',
     comoDetalhe: 'Conferir documentos',
+    canal: 'Atendimento',
     isDecisao: true,
     proximoPassoId: null,
-    passoSimId: 4, // SIM -> Realizar atualização
-    passoNaoId: 5, // NÃO -> Informar beneficiário
+    passoSimId: 4,
+    passoNaoId: 5,
   },
-  // Passo 4: Fim SIM
   {
     numeroPasso: 4,
     descricaoAcao: 'Realizar atualização',
     quemAtor: 'Atendimento',
     comoDetalhe: 'Via CRM',
+    canal: 'Atendimento',
     isDecisao: false,
     proximoPassoId: null,
     passoSimId: null,
     passoNaoId: null,
   },
-  // Passo 5: Fim NÃO
   {
     numeroPasso: 5,
     descricaoAcao: 'Informar beneficiário',
     quemAtor: 'Atendimento',
     comoDetalhe: 'Via whatsapp',
+    canal: 'Via whatsapp',
     isDecisao: false,
     proximoPassoId: null,
     passoSimId: null,
@@ -62,22 +61,592 @@ const fluxoAtualizacaoDados = [
   },
 ];
 
-async function main() {
-  console.log(`Iniciando o seeding...`);
+// Dados do Fluxo 2: Cobrança Indevida
+const fluxoCobrancaIndevida = [
+  {
+    numeroPasso: 6,
+    descricaoAcao: 'Solicitar dados referente à cobrança',
+    quemAtor: 'Atendimento',
+    comoDetalhe: 'Boleto e qual o procedimento indevido',
+    canal: 'Presencialmente, e-mail ou onzap',
+    isDecisao: false,
+    proximoPassoId: 7,
+    passoSimId: null,
+    passoNaoId: null,
+  },
+  {
+    numeroPasso: 7,
+    descricaoAcao: 'Registrar atendimento',
+    quemAtor: 'Atendimento',
+    comoDetalhe: 'Comprovando o beneficiário e competência da cobrança',
+    canal: 'Atendimento',
+    isDecisao: false,
+    proximoPassoId: 8,
+    passoSimId: null,
+    passoNaoId: null,
+  },
+  {
+    numeroPasso: 8,
+    descricaoAcao: 'Fornecer protocolo para o paciente',
+    quemAtor: 'Atendimento',
+    comoDetalhe: 'Verbalmente ou via texto',
+    canal: 'Atendimento',
+    isDecisao: false,
+    proximoPassoId: 9,
+    passoSimId: null,
+    passoNaoId: null,
+  },
+  {
+    numeroPasso: 9,
+    descricaoAcao: 'Enviar dados via e-mail para as contas médicas',
+    quemAtor: 'Atendimento',
+    comoDetalhe: 'Via texto',
+    canal: 'E-mail',
+    isDecisao: false,
+    proximoPassoId: 10,
+    passoSimId: null,
+    passoNaoId: null,
+  },
+  {
+    numeroPasso: 10,
+    descricaoAcao: 'Enviar comprovante ao paciente',
+    quemAtor: 'Atendimento',
+    comoDetalhe:
+      'Comprovante da realização do procedimento, via e-mail ou onzap',
+    canal: 'E-mail ou onzap',
+    isDecisao: true,
+    proximoPassoId: null,
+    passoSimId: 12,
+    passoNaoId: 11,
+  },
+  {
+    numeroPasso: 11,
+    descricaoAcao: 'Solicitar via presencial na tesouraria',
+    quemAtor: 'Atendimento',
+    comoDetalhe: 'Via texto ou verbalmente',
+    canal: 'Presencialmente',
+    isDecisao: true,
+    proximoPassoId: null,
+    passoSimId: 12,
+    passoNaoId: 13,
+  },
+  {
+    numeroPasso: 12,
+    descricaoAcao: 'Perguntar qual forma de desconto',
+    quemAtor: 'Atendimento',
+    comoDetalhe: 'Entrando em contato com o cliente sobre o atual ou futuro',
+    canal: 'Atendimento',
+    isDecisao: false,
+    proximoPassoId: 13,
+    passoSimId: null,
+    passoNaoId: null,
+  },
+  {
+    numeroPasso: 13,
+    descricaoAcao: 'Informar o financeiro',
+    quemAtor: 'Atendimento',
+    comoDetalhe:
+      'Encaminhando e-mail do contas médicas, e informando forma de desconto',
+    canal: 'E-mail',
+    isDecisao: false,
+    proximoPassoId: null,
+    passoSimId: null,
+    passoNaoId: null,
+  },
+];
 
-  // Deleta dados existentes para evitar duplicidade (opcional)
+// Dados do Fluxo 3: Registro de Documentos
+const fluxoRegistroDocumentos = [
+  // Nota: Cliente solicita / Processo realizado presencialmente
+  {
+    numeroPasso: 14,
+    descricaoAcao: 'Solicitar documentos',
+    quemAtor: 'Atendimento',
+    comoDetalhe: 'Rg e cpf, comprovante de matrícula da faculdade e frequência',
+    canal: 'Presencialmente',
+    isDecisao: false,
+    proximoPassoId: 15,
+    passoSimId: null,
+    passoNaoId: null,
+  },
+  {
+    numeroPasso: 15,
+    descricaoAcao: 'Tirar cópia dos documentos',
+    quemAtor: 'Atendimento',
+    comoDetalhe: 'Fotocopiadora',
+    canal: 'Atendimento',
+    isDecisao: false,
+    proximoPassoId: 16,
+    passoSimId: null,
+    passoNaoId: null,
+  },
+  {
+    numeroPasso: 16,
+    descricaoAcao: 'Registrar atendimento',
+    quemAtor: 'Atendimento',
+    comoDetalhe: 'No ERP Solus',
+    canal: 'Atendimento',
+    isDecisao: false,
+    proximoPassoId: 17,
+    passoSimId: null,
+    passoNaoId: null,
+  },
+  {
+    numeroPasso: 17,
+    descricaoAcao: 'Entregar protocolo',
+    quemAtor: 'Atendimento',
+    comoDetalhe: 'Uma via em papel físico',
+    canal: 'Presencialmente',
+    isDecisao: false,
+    proximoPassoId: 18,
+    passoSimId: null,
+    passoNaoId: null,
+  },
+  {
+    numeroPasso: 18,
+    descricaoAcao: 'Registrar documento em planilha de excel',
+    quemAtor: 'Atendimento',
+    comoDetalhe: 'Seguindo sequência de protocolos',
+    canal: 'Atendimento',
+    isDecisao: false,
+    proximoPassoId: 19,
+    passoSimId: null,
+    passoNaoId: null,
+  },
+  {
+    numeroPasso: 19,
+    descricaoAcao: 'Levar documentos para o cadastro',
+    quemAtor: 'Atendimento',
+    comoDetalhe: 'Pessoalmente',
+    canal: 'Atendimento',
+    isDecisao: true,
+    proximoPassoId: null,
+    passoSimId: null,
+    passoNaoId: 20,
+  },
+  {
+    numeroPasso: 20,
+    descricaoAcao: 'Informar o atendimento',
+    quemAtor: 'Cadastro',
+    comoDetalhe: 'Informando quais documentos precisam de correção',
+    canal: 'Cadastro',
+    isDecisao: false,
+    proximoPassoId: 21,
+    passoSimId: null,
+    passoNaoId: null,
+  },
+  {
+    numeroPasso: 21,
+    descricaoAcao: 'Solicitar documentos ao cliente',
+    quemAtor: 'Atendimento',
+    comoDetalhe: 'Via telefone e onzap',
+    canal: 'Telefone e onzap',
+    isDecisao: false,
+    proximoPassoId: 15,
+    passoSimId: null,
+    passoNaoId: null,
+  },
+];
+
+// Dados do NOVO Fluxo 4: Emissão de 2ª Via (Inicia em 22)
+const fluxoEmissao2aVia = [
+  {
+    numeroPasso: 22,
+    descricaoAcao: 'Acessar plataforma',
+    quemAtor: 'Beneficiário',
+    comoDetalhe: 'App ou Site e realizar login',
+    canal: 'Site ou aplicativo',
+    isDecisao: false,
+    proximoPassoId: 23,
+    passoSimId: null,
+    passoNaoId: null,
+  },
+  {
+    numeroPasso: 23,
+    descricaoAcao: 'Selecionar menu financeiro',
+    quemAtor: 'Beneficiário',
+    comoDetalhe: 'navegação pela plataforma',
+    canal: 'Site ou aplicativo',
+    isDecisao: false,
+    proximoPassoId: 24,
+    passoSimId: null,
+    passoNaoId: null,
+  },
+  {
+    numeroPasso: 24,
+    descricaoAcao: 'Selecionar a competência que deseja',
+    quemAtor: 'Beneficiário',
+    comoDetalhe: 'navegação pela plataforma',
+    canal: 'Site ou aplicativo',
+    isDecisao: false,
+    proximoPassoId: 25,
+    passoSimId: null,
+    passoNaoId: null,
+  },
+  {
+    numeroPasso: 25,
+    descricaoAcao: 'Clicar em impressão 2ª via',
+    quemAtor: 'Beneficiário',
+    comoDetalhe: 'navegação pela plataforma',
+    canal: 'Site ou aplicativo',
+    isDecisao: false,
+    proximoPassoId: null,
+    passoSimId: null,
+    passoNaoId: null,
+  },
+];
+
+// Dados do Fluxo 5: Autorização de Procedimentos
+const fluxoAutorizacaoProcedimentos = [
+  {
+    numeroPasso: 26,
+    descricaoAcao: 'Fornecer as informações necessárias',
+    quemAtor: 'Beneficiário',
+    comoDetalhe:
+      'Via texto: nome completo, data de nascimento e foto do pedido médico',
+    canal: 'Whatsapp ou Presencialmente',
+    isDecisao: false,
+    proximoPassoId: 27,
+    passoSimId: null,
+    passoNaoId: null,
+  },
+  {
+    numeroPasso: 27,
+    descricaoAcao: 'Registrar atendimento',
+    quemAtor: 'Atendimento',
+    comoDetalhe:
+      'Via CRM: informar nome beneficiário, médico solicitante, cód procedimento',
+    canal: 'Atendimento',
+    isDecisao: false,
+    proximoPassoId: 28,
+    passoSimId: null,
+    passoNaoId: null,
+  },
+  {
+    numeroPasso: 28,
+    descricaoAcao: 'Verificar necessidade de auditoria',
+    quemAtor: 'Atendimento',
+    comoDetalhe: 'Checagem de regra de auditoria',
+    canal: 'Atendimento',
+    isDecisao: true,
+    proximoPassoId: null,
+    passoSimId: 29,
+    passoNaoId: 31,
+  },
+  {
+    numeroPasso: 29,
+    descricaoAcao: 'Informar ao beneficiário',
+    quemAtor: 'Atendimento',
+    comoDetalhe:
+      'Número do protocolo, prazo de retorno (10 dias se OPME, 5 dias demais)',
+    canal: 'Atendimento',
+    isDecisao: false,
+    proximoPassoId: 30,
+    passoSimId: null,
+    passoNaoId: null,
+  },
+  {
+    numeroPasso: 30,
+    descricaoAcao: 'Monitorar status da guia',
+    quemAtor: 'Beneficiário',
+    comoDetalhe: 'Via aplicativo, ligação ou whatsapp',
+    canal: 'Beneficiário',
+    isDecisao: false,
+    proximoPassoId: 32,
+    passoSimId: null,
+    passoNaoId: null,
+  },
+  {
+    numeroPasso: 31,
+    descricaoAcao: 'Verificar se procedimento tem cobertura',
+    quemAtor: 'Atendimento',
+    comoDetalhe: 'Checagem de cobertura do procedimento',
+    canal: 'Atendimento',
+    isDecisao: true,
+    proximoPassoId: null,
+    passoSimId: 32,
+    passoNaoId: 33,
+  },
+  {
+    numeroPasso: 32,
+    descricaoAcao: 'Informar ao beneficiário',
+    quemAtor: 'Atendimento',
+    comoDetalhe: 'Número do protocolo e da guia',
+    canal: 'Atendimento',
+    isDecisao: false,
+    proximoPassoId: null,
+    passoSimId: null,
+    passoNaoId: null,
+  },
+  {
+    numeroPasso: 33,
+    descricaoAcao: 'Informar ao beneficiário sobre negativa',
+    quemAtor: 'Atendimento',
+    comoDetalhe: 'Número do protocolo e motivo da negativa',
+    canal: 'Atendimento',
+    isDecisao: false,
+    proximoPassoId: null,
+    passoSimId: null,
+    passoNaoId: null,
+  },
+];
+
+// Dados do Fluxo 6: Troca de Titularidade
+const fluxoTrocaTitularidade = [
+  {
+    numeroPasso: 34,
+    descricaoAcao: 'Solicitar os documentos',
+    quemAtor: 'Atendimento',
+    comoDetalhe: 'RG e CPF, certidão de óbito, comprovante de endereço',
+    canal: 'Presencialmente',
+    isDecisao: false,
+    proximoPassoId: 35,
+    passoSimId: null,
+    passoNaoId: null,
+  },
+  {
+    numeroPasso: 35,
+    descricaoAcao: 'Imprimir documento padrão',
+    quemAtor: 'Atendimento',
+    comoDetalhe: 'Acesso a pasta servidor',
+    canal: 'Atendimento',
+    isDecisao: false,
+    proximoPassoId: 36,
+    passoSimId: null,
+    passoNaoId: null,
+  },
+  {
+    numeroPasso: 36,
+    descricaoAcao: 'Assinar documento padrão',
+    quemAtor: 'Cliente',
+    comoDetalhe: 'Se ambos titulares vivos, necessária assinatura de ambos',
+    canal: 'Presencialmente',
+    isDecisao: false,
+    proximoPassoId: 37,
+    passoSimId: null,
+    passoNaoId: null,
+  },
+  {
+    numeroPasso: 37,
+    descricaoAcao: 'Tirar cópia dos documentos',
+    quemAtor: 'Atendimento',
+    comoDetalhe: 'Fotocopiadora',
+    canal: 'Atendimento',
+    isDecisao: false,
+    proximoPassoId: 38,
+    passoSimId: null,
+    passoNaoId: null,
+  },
+  {
+    numeroPasso: 38,
+    descricaoAcao: 'Registrar atendimento',
+    quemAtor: 'Atendimento',
+    comoDetalhe: 'No ERP Solus',
+    canal: 'Atendimento',
+    isDecisao: false,
+    proximoPassoId: 39,
+    passoSimId: null,
+    passoNaoId: null,
+  },
+  {
+    numeroPasso: 39,
+    descricaoAcao: 'Entregar protocolo',
+    quemAtor: 'Atendimento',
+    comoDetalhe: 'Uma via em papel físico',
+    canal: 'Presencialmente',
+    isDecisao: false,
+    proximoPassoId: 40,
+    passoSimId: null,
+    passoNaoId: null,
+  },
+  {
+    numeroPasso: 40,
+    descricaoAcao: 'Registrar documento na planilha de excel',
+    quemAtor: 'Atendimento',
+    comoDetalhe: 'Seguindo sequência de protocolos',
+    canal: 'Atendimento',
+    isDecisao: false,
+    proximoPassoId: 41,
+    passoSimId: null,
+    passoNaoId: null,
+  },
+  {
+    numeroPasso: 41,
+    descricaoAcao: 'Levar documentos para o cadastro',
+    quemAtor: 'Atendimento',
+    comoDetalhe: 'Pessoalmente',
+    canal: 'Atendimento',
+    isDecisao: true,
+    proximoPassoId: null,
+    passoSimId: null,
+    passoNaoId: 42,
+  },
+  {
+    numeroPasso: 42,
+    descricaoAcao: 'Informar o atendimento',
+    quemAtor: 'Cadastro',
+    comoDetalhe: 'Informando quais documentos precisam de correção',
+    canal: 'Cadastro',
+    isDecisao: false,
+    proximoPassoId: 43,
+    passoSimId: null,
+    passoNaoId: null,
+  },
+  {
+    numeroPasso: 43,
+    descricaoAcao: 'Solicitar ao cliente',
+    quemAtor: 'Atendimento',
+    comoDetalhe: 'Via telefone e onzap',
+    canal: 'Telefone e onzap',
+    isDecisao: false,
+    proximoPassoId: 35,
+    passoSimId: null,
+    passoNaoId: null,
+  },
+];
+
+// Dados do Fluxo 7: Agendamento de Consultas
+const fluxoAgendamentoConsultas = [
+  // Caminho 1: Beneficiário via aplicativo
+  {
+    numeroPasso: 44,
+    descricaoAcao: 'Buscar agenda disponível',
+    quemAtor: 'Beneficiário',
+    comoDetalhe: 'Via aplicativo, filtrando cidade, especialidade, médico (opcional) e data',
+    canal: 'Aplicativo',
+    isDecisao: false,
+    proximoPassoId: 45,
+    passoSimId: null,
+    passoNaoId: null,
+  },
+  {
+    numeroPasso: 45,
+    descricaoAcao: 'Visualizar vagas disponíveis',
+    quemAtor: 'Beneficiário',
+    comoDetalhe: 'Via aplicativo',
+    canal: 'Aplicativo',
+    isDecisao: false,
+    proximoPassoId: 46,
+    passoSimId: null,
+    passoNaoId: null,
+  },
+  {
+    numeroPasso: 46,
+    descricaoAcao: 'Reservar a agenda',
+    quemAtor: 'Beneficiário',
+    comoDetalhe: 'Selecionar dia, horário e profissional de preferência',
+    canal: 'Aplicativo',
+    isDecisao: false,
+    proximoPassoId: 47,
+    passoSimId: null,
+    passoNaoId: null,
+  },
+  {
+    numeroPasso: 47,
+    descricaoAcao: 'Confirmar dados do agendamento',
+    quemAtor: 'Beneficiário',
+    comoDetalhe: 'Selecionar dia, horário e profissional de preferência',
+    canal: 'Aplicativo',
+    isDecisao: false,
+    proximoPassoId: null,
+    passoSimId: null,
+    passoNaoId: null,
+  },
+
+  // Caminho 2: Beneficiário via atendimento (Unigente)
+  {
+    numeroPasso: 48,
+    descricaoAcao: 'Entrar em contato',
+    quemAtor: 'Beneficiário',
+    comoDetalhe: 'Via whatsapp ou ligação telefônica',
+    canal: 'Whatsapp ou telefone',
+    isDecisao: false,
+    proximoPassoId: 49,
+    passoSimId: null,
+    passoNaoId: null,
+  },
+  {
+    numeroPasso: 49,
+    descricaoAcao: 'Passar as informações necessárias',
+    quemAtor: 'Beneficiário',
+    comoDetalhe: 'Via texto ou voz: Nome completo, data de nascimento, especialidade e motivo da consulta',
+    canal: 'Whatsapp ou telefone',
+    isDecisao: false,
+    proximoPassoId: 50,
+    passoSimId: null,
+    passoNaoId: null,
+  },
+  {
+    numeroPasso: 50,
+    descricaoAcao: 'Verificar agendas disponíveis',
+    quemAtor: 'Atendimento',
+    comoDetalhe: 'Via CRM',
+    canal: 'Atendimento',
+    isDecisao: false,
+    proximoPassoId: 51,
+    passoSimId: null,
+    passoNaoId: null,
+  },
+  {
+    numeroPasso: 51,
+    descricaoAcao: 'Informar ao beneficiário',
+    quemAtor: 'Atendimento',
+    comoDetalhe: 'Via texto ou voz',
+    canal: 'Atendimento',
+    isDecisao: false,
+    proximoPassoId: 52,
+    passoSimId: null,
+    passoNaoId: null,
+  },
+  {
+    numeroPasso: 52,
+    descricaoAcao: 'Confirmar dados do agendamento',
+    quemAtor: 'Atendimento',
+    comoDetalhe: 'Via texto ou voz, informando dia, horário, médico, endereço e protocolo da solicitação',
+    canal: 'Atendimento',
+    isDecisao: false,
+    proximoPassoId: 53,
+    passoSimId: null,
+    passoNaoId: null,
+  },
+  {
+    numeroPasso: 53,
+    descricaoAcao: 'Reservar agenda',
+    quemAtor: 'Atendimento',
+    comoDetalhe: 'Via CRM',
+    canal: 'Atendimento',
+    isDecisao: false,
+    proximoPassoId: null,
+    passoSimId: null,
+    passoNaoId: null,
+  },
+];
+
+
+async function main() {
+  console.log(`Iniciando o seeding para 4 fluxos...`);
+
   await prisma.fluxoPasso.deleteMany();
   console.log(`Registros FluxoPasso existentes deletados.`);
-  
-  // Insere os dados do novo fluxo
-  for (const passoData of fluxoAtualizacaoDados) {
-    const passo = await prisma.fluxoPasso.create({
-      data: passoData,
-    });
-    console.log(`Criado passo com ID: ${passo.id} - ${passo.descricaoAcao}`);
+
+  // Combina todos os dados em um único array
+  const todosOsFluxos = [
+    ...fluxoAtualizacaoDados,
+    ...fluxoCobrancaIndevida,
+    ...fluxoRegistroDocumentos,
+    ...fluxoEmissao2aVia, 
+    ...fluxoAutorizacaoProcedimentos,
+    ...fluxoTrocaTitularidade,
+    ...fluxoAgendamentoConsultas
+  ];
+
+  // Inserção de todos os fluxos
+  for (const passoData of todosOsFluxos) {
+    await prisma.fluxoPasso.create({ data: passoData });
   }
 
-  console.log(`Seeding concluído.`);
+  console.log(`\nInseridos ${todosOsFluxos.length} passos no total.`);
+  console.log(`Seeding concluído com sucesso para 7 fluxos.`);
 }
 
 main()
