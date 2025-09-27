@@ -51,7 +51,7 @@ export class UsuariosService {
 
   async findAll() {
     const usuarios = await this.prisma.usuario.findMany({
-      include: { perfilPaciente: true },
+      where: { perfil: Perfil.PACIENTE },
     });
     return usuarios.map(this.removeSenha);
   }

@@ -1,0 +1,33 @@
+
+curl -X POST http://localhost:3000/auth/login \
+-H "Content-Type: application/json" \
+-d '{
+  "email": "joao.paciente@email.com",
+  "senha": "senhaSegura123"
+}'
+
+
+###
+
+curl -X POST http://localhost:3000/usuarios \
+-H "Content-Type: application/json" \
+-d '{
+  "email": "joao.paciente@email.com",
+  "nome": "João da Silva",
+  "senha": "senhaSegura123",
+  "perfil": "PACIENTE",
+  "perfilPaciente": {
+    "dataNascimento": "1985-07-20",
+    "numeroProntuario": "PRONT-001",
+    "cpf": "031.627.020-20",
+    "telefoneContato": "11999998888",
+    "endereco": "Rua dos Pacientes, 123"
+  }
+}'
+
+###
+
+curl -X GET http://localhost:3000/usuarios
+-H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImpvYW8ucGFjaWVudGVAZW1haWwuY29tIiwic3ViIjoiNmY0N2NiZTQtMWI4OS00MGEyLWFlMWItOTc3OThmMDE3NGZkIiwicGVyZmlsIjoiUEFDSUVOVEUiLCJpYXQiOjE3NTg5OTMzNDEsImV4cCI6MTc1OTA3OTc0MX0.EAYDh_DRFY3o633ghOhB2HhHz-VApLA0Yp1KazJyRaI"
+
+###
