@@ -1,11 +1,8 @@
 import { IsNotEmpty, IsString, IsNumber } from 'class-validator';
 
-export class ChatRequestDto {
+export class NewChatRequestDto {
   @IsString()
   @IsNotEmpty()
   pergunta: string;
 
-  @IsString()
-  @IsNotEmpty()
-  sessionId: string; 
 }
