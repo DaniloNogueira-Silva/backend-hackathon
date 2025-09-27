@@ -114,4 +114,17 @@ export class UsuariosService {
       },
     });
   }
+
+  // src/pacientes/pacientes.service.ts
+  async findByName(nome: string) {
+    return this.prisma.usuario.findFirst({
+      where: {
+        nome: nome,
+        perfil: 'PACIENTE'
+      },
+      include: {
+        perfilPaciente: true,
+      },
+    });
+  }
 }
