@@ -37,6 +37,7 @@ model PerfilPaciente {
   id               String   @id @default(uuid())
   dataNascimento   DateTime @map("data_nascimento") @db.Date
   numeroProntuario String   @unique @map("numero_prontuario")
+  cpf              String   @unique @map("cpf")
   telefoneContato  String?  @map("telefone_contato")
   endereco         String?
 

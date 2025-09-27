@@ -12,7 +12,6 @@ import {
 import { CreatePerfilPacienteDto } from './create-perfil-pacient.dto';
 import { Perfil } from '@prisma/client';
 
-
 export class CreateUsuarioDto {
     @IsEmail()
     @IsNotEmpty()
@@ -28,6 +27,10 @@ export class CreateUsuarioDto {
 
     @IsEnum(Perfil)
     perfil: Perfil;
+
+    @IsOptional()
+    @IsString()
+    telefone?: string;
 
     @IsOptional()
     @ValidateNested()

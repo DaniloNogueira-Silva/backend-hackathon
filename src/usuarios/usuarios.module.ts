@@ -4,7 +4,9 @@ import { UsuariosController } from './usuarios.controller';
 import { PrismaService } from 'src/prisma/prisma.service';
 
 @Module({
+  imports: [],
   controllers: [UsuariosController],
   providers: [UsuariosService, PrismaService],
+  exports: [UsuariosService],
 })
-export class UsuariosModule {}
+export class UsuariosModule { }

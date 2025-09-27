@@ -29,7 +29,12 @@ export class UsuariosService {
           perfil,
           perfilPaciente:
             perfil === Perfil.PACIENTE && perfilPaciente
-              ? { create: perfilPaciente }
+              ? {
+                create: {
+                  ...perfilPaciente,
+                  dataNascimento: new Date(perfilPaciente.dataNascimento),
+                }
+              }
               : undefined,
         },
         include: { perfilPaciente: true },
@@ -89,5 +94,24 @@ export class UsuariosService {
     await this.findOne(id);
     await this.prisma.usuario.delete({ where: { id } });
     return;
+  }
+
+  async findOneByEmail(email: string) {
+    return this.prisma.usuario.findUnique({
+      where: { email },
+    });
+  }
+
+  async findByDocumento(cpf: string) {
+    return this.prisma.usuario.findFirst({
+      where: {
+        perfilPaciente: {
+          cpf: cpf,
+        },
+      },
+      include: {
+        perfilPaciente: true,
+      },
+    });
   }
 }

@@ -5,6 +5,9 @@ export class CreatePerfilPacienteDto {
     dataNascimento: string;
 
     @IsString()
+    cpf: string;
+
+    @IsString()
     numeroProntuario: string;
 
     @IsString()
