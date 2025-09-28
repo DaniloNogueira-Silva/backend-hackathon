@@ -1,18 +1,18 @@
-curl -X POST http://localhost:3000/chat/continue \
+curl -X POST http://localhost:3000/chat/start \
 -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImNlY2lsaWEubmFpckBlbWFpbC5jb20iLCJzdWIiOiJmZDg3NGEwNC04MmY1LTQ5ZDItYTZkNC1hYTE0Y2Q3ZGJhYmQiLCJwZXJmaWwiOiJQQUNJRU5URSIsInBlcmZpbElkIjoiZjg1NWJhZDEtNThjMC00M2FmLWIzODgtYzQ5ZTEwMDRhZjM3IiwiaWF0IjoxNzU5MDIwMzAzLCJleHAiOjE3NTkxMDY3MDN9.bfQDrTp6YNH68tAJ8sknbEAyZzBxcsdU5kg5LthRmYQ" \
 -H "Content-Type: application/json" \
 -d '{
-    "pergunta": "meu cpf é 031.627.020-21",
-    "sessionId": "9df4a9d4-892c-40b3-b34e-4f0a517ef8ea"
+    "pergunta": "O que acha de um honda"
 }'
 
 ###
 
-curl -X POST http://localhost:3000/chat/teste \
+curl -X POST http://localhost:3000/chat/agendamento \
 -H "Content-Type: application/json" \
 -d '{
-  "horariosIndisponiveis": [
-    "2025-09-28T10:00:00.000Z",
-    "2025-09-29T08:00:00.000Z"
-  ]
-}
+    "pergunta": "Sim"
+
+}'
+
+###
+031.627.020-21

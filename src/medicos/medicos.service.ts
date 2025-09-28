@@ -6,7 +6,7 @@ import { Perfil, Prisma, Usuario } from '@prisma/client';
 
 @Injectable()
 export class MedicosService {
-  constructor(private prisma: PrismaService) {}
+  constructor(private prisma: PrismaService) { }
 
   async create(dto: CreateMedicoDto) {
     const hashSenha = await bcrypt.hash(dto.senha, 10);
@@ -118,6 +118,34 @@ export class MedicosService {
             },
           },
         ],
+      },
+      include: {
+        perfilMedico: true,
+      },
+    });
+  }
+
+  async findByEspecialidade(especialidade: string) {
+    return this.prisma.usuario.findMany({
+      where: {
+        perfil: Perfil.MEDICO,
+        perfilMedico: {
+          especialidade: especialidade,
+        },
+      },
+      include: {
+        perfilMedico: true,
+      },
+    });
+  }
+
+  async findByNome(nome: string) {
+    return this.prisma.usuario.findMany({
+      where: {
+        perfil: Perfil.MEDICO,
+        nome: {
+          contains: nome,
+        },
       },
       include: {
         perfilMedico: true,

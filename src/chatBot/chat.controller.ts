@@ -67,8 +67,8 @@ export class ChatController {
     }
   }
 
-  @Post('/agendamento')
-  async agendamento(@Body() dto: any) {
+  @Post('agendamento')
+  async agendamento(@Body() dto: ChatRequestDto) {
     try {
       return await this.agendamentoChatService.processarAgendamento(dto);
     } catch (error) {
