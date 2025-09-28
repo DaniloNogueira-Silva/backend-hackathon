@@ -1,3 +1,23 @@
+export const processarPdfDeclaration: GenAIFunctionDeclaration = {
+  name: 'processarPdfEExtrairDados',
+  description:
+    'Processa um PDF para extrair informações de liberação de um processo. Use sempre que o usuário quiser autorizar um processo ou iniciar algo que exija autorização.',
+  parameters: {
+    type: 'OBJECT',
+    properties: {
+      pdfFile: {
+        type: 'STRING',
+        description: 'Deve ser o arquivo PDF enviado pelo usuário.',
+      },
+    },
+    required: ['pdfFile'], // A IA vai inferir que precisa deste arquivo
+  },
+};
+
+export const pdfTool: GenAITool = {
+  functionDeclarations: [processarPdfDeclaration],
+};
+
 export type GenAIFunctionDeclaration = {
   name: string;
   description?: string;

@@ -4,6 +4,7 @@ import { GoogleGenerativeAI, ChatSession } from '@google/generative-ai';
 import { PrismaService } from '../prisma/prisma.service';
 import { MedicosService } from '../medicos/medicos.service';
 import { ChatRequestDto } from './dto/chat-request.dto';
+import { AutorizacoesExameService } from 'src/autorizacoes-exame/autorizacoes-exame.service';
 import { FluxoPasso } from '@prisma/client';
 
 import {
@@ -14,6 +15,7 @@ import {
   montarCalendarioDisponivel,
   montarCalendarioDisponivelPorConsultas,
   consultaTool,
+  pdfTool,
 } from './utils';
 import { ConsultasService } from 'src/consultas/consultas.service';
 import { DiaDisponivel } from './interface/dia.disponivel.interface';
@@ -33,6 +35,7 @@ export class ChatService {
       ...buscaMedicoTool.functionDeclarations,
       ...horarioMedicoTool.functionDeclarations,
       ...consultaTool.functionDeclarations,
+      ...pdfTool.functionDeclarations,
     ],
   };
 
@@ -41,6 +44,7 @@ export class ChatService {
     private readonly medicosService: MedicosService,
     private readonly consultasService: ConsultasService,
     private readonly usuarioService: UsuariosService,
+    private readonly autorizacoesExameService: AutorizacoesExameService,
     private prisma: PrismaService,
   ) {
     const apiKey = this.configService.get<string>('GEMINI_API_KEY');
@@ -300,7 +304,10 @@ ${contexto}
     return agendaSeteDias;
   }
 
-  async generateResponse(dto: ChatRequestDto): Promise<{ resposta: string }> {
+  async generateResponse(
+    dto: ChatRequestDto,
+    pdfFile?: Express.Multer.File, // <-- Adicionando o arquivo PDF opcional
+  ): Promise<{ resposta: string }> {
     const todosPassos = await this.prisma.fluxoPasso.findMany({});
 
     if (todosPassos.length === 0) {
@@ -314,8 +321,35 @@ ${contexto}
     );
 
     let initialResponse: any;
+
     try {
-      initialResponse = await chatSession.sendMessage(dto.pergunta);
+      if (pdfFile) {
+        // 1. O PDF foi enviado: Executa a função do backend (autorizacoesExameService)
+
+        const result =
+          await this.autorizacoesExameService.processarPdfEExtrairDados(
+            pdfFile,
+          );
+
+        // O Gemini espera um objeto de resposta. Envia a lista completa de exames.
+        const functionResult = {
+          functionResponse: {
+            name: 'processarPdfEExtrairDados',
+            response: {
+              exames: result, // Envia a lista de exames/autorizações para a IA
+            },
+          },
+        };
+
+        // Envia o resultado da execução da função de volta para a IA
+        initialResponse = await chatSession.sendMessage({
+          role: 'function',
+          parts: [{ functionResponse: functionResult.functionResponse }],
+        } as any);
+      } else {
+        // 2. Não há PDF, é uma mensagem normal do usuário ou a primeira interação
+        initialResponse = await chatSession.sendMessage(dto.pergunta);
+      }
     } catch (error) {
       console.error('Erro na chamada Gemini:', error);
       throw new Error('Falha na comunicação com a IA.');
@@ -324,7 +358,18 @@ ${contexto}
     const functionCall = extractFunctionCall(initialResponse);
     let respostaIA = '';
 
-    if (functionCall && functionCall.name === 'findByNomeOuEspecialidade') {
+    if (functionCall && functionCall.name === 'processarPdfEExtrairDados') {
+      // 3. A IA solicitou a função, mas o PDF não foi enviado nesta requisição.
+      if (!pdfFile) {
+        return {
+          resposta:
+            'Para autorizar o processo, por favor, envie o **documento de autorização (PDF)** na próxima mensagem.',
+        };
+      }
+    } else if (
+      functionCall &&
+      functionCall.name === 'findByNomeOuEspecialidade'
+    ) {
       const termo = functionCall.args.termo as string;
 
       const medicos =
@@ -402,7 +447,46 @@ ${contexto}
         }
       }
     } else {
+      // 4. A IA gerou uma resposta em texto
       respostaIA = extractText(initialResponse);
+
+      // **TRATAMENTO DO RESULTADO DO PDF (para exibição amigável):**
+      if (pdfFile) {
+        // Tenta extrair a resposta da função do último "part"
+        const lastPart =
+          initialResponse?.response?.candidates?.[0]?.content?.parts?.find(
+            (p: any) => p.functionResponse,
+          );
+        const exames = lastPart?.functionResponse?.response?.exames as
+          | any[]
+          | undefined;
+
+        if (exames && exames.length > 0) {
+          let resultadoStr =
+            '\n\n**Resultado do Processamento do PDF (Autorizações):**\n';
+          exames.forEach((exame) => {
+            const liberadoEm = exame.liberadoEm;
+            const nomeExame = exame.exame;
+
+            // Aqui é onde você usa o liberadoEm
+            if (liberadoEm) {
+              const dataFormatada = format(
+                parseISO(liberadoEm),
+                'dd/MM/yyyy HH:mm:ss',
+                { locale: ptBR },
+              );
+              resultadoStr += `\n✅ **${nomeExame}:** Liberado em ${dataFormatada}.`;
+            } else {
+              resultadoStr += `\n⚠️ **${nomeExame}:** Não precisa de autorização (Status: PENDENTE/Sem Auditoria).`;
+            }
+          });
+          // Adiciona o resultado formatado à resposta da IA
+          respostaIA += resultadoStr;
+        } else if (lastPart) {
+          // Se o array de exames veio vazio, mas a função foi chamada:
+          respostaIA += `\n\n❌ O documento foi processado, mas não foram encontradas autorizações válidas.`;
+        }
+      }
     }
 
     await this.prisma.interacao.create({
