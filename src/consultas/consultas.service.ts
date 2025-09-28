@@ -6,7 +6,7 @@ import { Prisma, StatusConsulta } from '@prisma/client';
 
 @Injectable()
 export class ConsultasService {
-  constructor(private prisma: PrismaService) {}
+  constructor(private prisma: PrismaService) { }
 
   async create(dto: CreateConsultaDto) {
     const { dataHoraInicio, pacienteId, medicoId, duracaoEmMinutos } = dto;
@@ -78,8 +78,8 @@ export class ConsultasService {
     const consultas = await this.prisma.consulta.findMany({
       where,
       include: {
-        paciente: { select: { usuario: { select: { nome: true } } } },
-        medico: { select: { usuario: { select: { nome: true } } } },
+        paciente: { select: { usuario: true } },
+        medico: { select: { usuario: true } },
       },
     });
 
