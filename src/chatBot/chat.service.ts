@@ -78,28 +78,51 @@ export class ChatService {
 
   public async generateSessionName(pergunta: string): Promise<string> {
     try {
-      const prompt = `Gere um nome para esta conversa, que seja conciso (máximo 5 palavras) e baseado na seguinte pergunta: "${pergunta}". O nome deve ser em português e relevante ao assunto.`;
+      const systemInstruction = `
+Você é um robô cuja única função é gerar um nome curto para uma conversa.
+Regras obrigatórias:
+- Responda apenas com o nome sugerido.
+- Sem frases explicativas, sem aspas, sem ponto final.
+- No máximo 5 palavras.
+- Em português, relevante à pergunta.
+`;
+
+      const prompt = `Gere o nome para esta conversa, que é sobre: "${pergunta}"`;
 
       const response = await this.ai
-        .getGenerativeModel({ model: 'gemini-2.5-flash' }) // Pode-se usar o mesmo modelo ou um mais leve
+        .getGenerativeModel({
+          model: this.modelName,
+          generationConfig: {
+            temperature: 0.1,
+          },
+          systemInstruction: {
+            role: 'system',
+            parts: [{ text: systemInstruction }],
+          },
+        })
         .generateContent({
           contents: [{ role: 'user', parts: [{ text: prompt }] }],
         });
 
-      let nomeGerado = response.response
-        .text()
-        .trim()
-        .replace(/^['"]|['"]$/g, '');
+      let nomeGerado =
+        response.response?.candidates?.[0]?.content?.parts
+          ?.map((p: any) => p.text || '')
+          .join(' ')
+          .trim() ?? '';
 
-      // Trunca para garantir um tamanho máximo
-      const palavras = nomeGerado.split(/\s+/);
+      nomeGerado = nomeGerado.replace(/^['"]|['"]$/g, '');
+      nomeGerado = nomeGerado.split(/[\n:.-]/)[0].trim();
+
+      const palavras = nomeGerado.split(/\s+/).filter(Boolean);
       if (palavras.length > 5) {
         nomeGerado = palavras.slice(0, 5).join(' ');
       }
 
-      return (
-        nomeGerado.charAt(0).toUpperCase() + nomeGerado.slice(1).toLowerCase()
-      );
+      if (nomeGerado.length > 0) {
+        return nomeGerado.charAt(0).toUpperCase() + nomeGerado.slice(1);
+      }
+
+      return 'Nova Conversa';
     } catch (error) {
       console.error('Erro ao gerar nome da sessão:', error);
       return 'Nova Conversa';
@@ -117,15 +140,17 @@ export class ChatService {
     const systemInstruction = `
 Você é um especialista em descrever fluxos de trabalho e processos E também um assistente capaz de buscar informações de agendamento.
 Sua tarefa é responder a todas as perguntas do usuário.
-1. Para perguntas sobre **fluxos de trabalho**, responda **APENAS** baseada no CONTEXTO ESTRUTURADO a seguir.
+1. Para perguntas sobre fluxos, responda APENAS baseada no CONTEXTO ESTRUTURADO a seguir.
 2. Para perguntas sobre **agendamento/busca de médico**, utilize a função \`findByNomeOuEspecialidade\` para consultar o banco de dados.
 Sua resposta deve ser amigável, concisa e levar em conta o histórico da conversa.
 Sempre será o beneficiário quem faz as perguntas.
 Não fale o número do passo.
+Fique atento ao canal
+Não cite WhatsApp, ao inves fale ChatBot
 
 REGRAS DE CLASSIFICAÇÃO DE FLUXO:
 - Se a pergunta for CLARA sobre um único processo (ex: "Quero 2ª via"), responda diretamente usando APENAS os passos daquele processo.
-- Se a pergunta for AMBÍGUA ou genérica de fluxo, você DEVE pedir esclarecimento (ex: liste as opções de fluxos relevantes).
+- Se a pergunta for AMBÍGUA ou genérica de fluxo, você DEVE pedir esclarecimento e mostras APENAS as opções de fluxos existentes cadastrados).
 REGRAS IMPORTANTES DO AGENDAMENTO:
 - Se o usuário informar apenas mês/dia e hora (ex.: "29-09 às 11"), ASSUMA o ano atual (${new Date().getFullYear()}).
 - Sempre converta a data/hora para formato ISO 8601 antes de responder ou chamar funções.
@@ -271,7 +296,6 @@ ${contexto}
         });
       }
     }
-    console.log('agendaSeteDias', agendaSeteDias);
 
     return agendaSeteDias;
   }
@@ -299,7 +323,6 @@ ${contexto}
 
     const functionCall = extractFunctionCall(initialResponse);
     let respostaIA = '';
-    console.log('functionCall', functionCall);
 
     if (functionCall && functionCall.name === 'findByNomeOuEspecialidade') {
       const termo = functionCall.args.termo as string;
@@ -331,12 +354,10 @@ ${contexto}
       } else {
         const userId = medico.perfilMedico?.id!;
         const consultas = await this.consultasService.findAll(userId);
-        console.log('consultas', consultas);
 
         const bookedStarts = (consultas ?? []).map((c: any) =>
           c.dataHoraInicio.toISOString(),
         );
-        console.log('bookedStarts', bookedStarts);
 
         const calendario = this.listarDisponiveis(bookedStarts);
         respostaIA = JSON.stringify(

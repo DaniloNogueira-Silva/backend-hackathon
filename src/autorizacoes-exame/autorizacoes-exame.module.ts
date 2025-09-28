@@ -10,5 +10,6 @@ import { MedicosService } from 'src/medicos/medicos.service';
   imports: [],
   controllers: [AutorizacoesExameController],
   providers: [AutorizacoesExameService, PrismaService, RolProcedimentosService, UsuariosService, MedicosService],
+  exports: [AutorizacoesExameService]
 })
 export class AutorizacoesExameModule { }

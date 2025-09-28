@@ -7,7 +7,6 @@ import {
   Get,
   UseGuards,
   Request,
-  Logger,
 } from '@nestjs/common';
 import { randomUUID } from 'crypto';
 import { ChatService } from './chat.service';
@@ -17,13 +16,11 @@ import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 
 @Controller('chat')
 export class ChatController {
-  private readonly logger = new Logger(ChatController.name);
   constructor(private readonly chatService: ChatService) { }
 
   @Post('start')
   async startChat(@Body() dto: NewChatRequestDto) {
     try {
-      this.logger.log(dto);
       const newSessionId = randomUUID();
       const respostaCompleta = await this.chatService.generateResponse({
         sessionId: newSessionId,
