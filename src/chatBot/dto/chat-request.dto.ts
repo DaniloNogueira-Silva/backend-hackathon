@@ -8,8 +8,4 @@ export class ChatRequestDto {
   @IsString()
   @IsNotEmpty()
   sessionId: string;
-
-  @IsString()
-  @IsOptional()
-  userId: string;
 }

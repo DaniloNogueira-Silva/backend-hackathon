@@ -18,8 +18,9 @@ import {
 import { ConsultasService } from 'src/consultas/consultas.service';
 import { DiaDisponivel } from './interface/dia.disponivel.interface';
 import { ptBR } from 'date-fns/locale';
-import { addDays, format, parseISO } from 'date-fns';
+import { addDays, format, parseISO, subHours } from 'date-fns';
 import { console } from 'inspector';
+import { UsuariosService } from 'src/usuarios/usuarios.service';
 
 @Injectable()
 export class ChatService {
@@ -39,6 +40,7 @@ export class ChatService {
     private configService: ConfigService,
     private readonly medicosService: MedicosService,
     private readonly consultasService: ConsultasService,
+    private readonly usuarioService: UsuariosService,
     private prisma: PrismaService,
   ) {
     const apiKey = this.configService.get<string>('GEMINI_API_KEY');
@@ -97,6 +99,7 @@ REGRAS DE CLASSIFICAÇÃO DE FLUXO:
 REGRAS IMPORTANTES DO AGENDAMENTO:
 - Se o usuário informar apenas mês/dia e hora (ex.: "29-09 às 11"), ASSUMA o ano atual (${new Date().getFullYear()}).
 - Sempre converta a data/hora para formato ISO 8601 antes de responder ou chamar funções.
+- Sempre que o usuário quiser marcar uma consulta, peça o cpf dele antes.
 
 
 --- CONTEXTO ESTRUTURADO DO FLUXO ---
@@ -246,8 +249,6 @@ ${contexto}
   }
 
   async generateResponse(dto: ChatRequestDto): Promise<{ resposta: string }> {
-    console.log("dasdadas")
-    const userId = dto.userId;
     const todosPassos = await this.prisma.fluxoPasso.findMany({});
 
     if (todosPassos.length === 0) {
@@ -325,8 +326,10 @@ ${contexto}
       }
     } else if (functionCall && functionCall.name === 'marcarConsulta') {
       const { crm, dataHoraInicio } = functionCall.args;
-      console.log(userId)
-      const pacienteId = userId; 
+      const termo = functionCall.args.termo as string;
+
+      const paciente = await this.usuarioService.findByDocumento(termo);
+      const pacienteId = paciente?.perfilPaciente?.id!;
       const medico = await this.medicosService.findByCRM(crm);
 
       if (!medico) {
@@ -336,9 +339,12 @@ ${contexto}
         if (!medicoId) {
           respostaIA = `Não consegui identificar o médico com CRM ${crm}.`;
         } else {
-          console.log("user: ",userId)
-          const consulta = await this.consultasService.create({
-            dataHoraInicio: new Date(dataHoraInicio).toISOString(),
+          const dataOriginal = new Date(dataHoraInicio);
+
+          const dataComSubtracao = subHours(dataOriginal, 3);
+
+          await this.consultasService.create({
+            dataHoraInicio: dataComSubtracao.toISOString(),
             pacienteId,
             medicoId,
           });

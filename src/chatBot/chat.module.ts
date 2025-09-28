@@ -5,9 +5,10 @@ import { ChatController } from './chat.controller';
 import { PrismaService } from '../prisma/prisma.service'; 
 import { MedicosModule } from 'src/medicos/medicos.module';
 import { ConsultasModule } from 'src/consultas/consultas.module';
+import { UsuariosModule } from 'src/usuarios/usuarios.module';
 
 @Module({
-  imports: [ConfigModule, MedicosModule, ConsultasModule], 
+  imports: [ConfigModule, MedicosModule, ConsultasModule, UsuariosModule], 
   controllers: [ChatController],
   providers: [ChatService, PrismaService], 
 })
