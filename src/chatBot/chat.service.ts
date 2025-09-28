@@ -15,6 +15,10 @@ import {
   montarCalendarioDisponivelPorConsultas,
 } from './utils';
 import { ConsultasService } from 'src/consultas/consultas.service';
+import { DiaDisponivel } from './interface/dia.disponivel.interface';
+import { ptBR } from 'date-fns/locale';
+import { addDays, format, parseISO } from 'date-fns';
+import { console } from 'inspector';
 
 @Injectable()
 export class ChatService {
@@ -174,8 +178,69 @@ ${contexto}
     };
   }
 
+  public listarDisponiveis(
+    horariosIndisponiveis: string[] = [],
+  ): DiaDisponivel[] {
+    console.log('horariosIndisponiveis', horariosIndisponiveis);
+
+    const indisponiveisSet = new Set<string>();
+
+    horariosIndisponiveis.forEach((dataIso) => {
+      try {
+        const dataObj = parseISO(dataIso);
+
+
+        const ano = dataObj.getUTCFullYear();
+        const mes = String(dataObj.getUTCMonth() + 1).padStart(2, '0');
+        const dia = String(dataObj.getUTCDate()).padStart(2, '0');
+        const hora = String(dataObj.getUTCHours()).padStart(2, '0');
+        const chave = `${ano}-${mes}-${dia} ${hora}:00`;
+
+        indisponiveisSet.add(chave);
+      } catch (error) {
+        console.error(`Data inválida recebida: ${dataIso}`);
+      }
+    });
+
+    const hoje = new Date();
+    const agendaSeteDias: DiaDisponivel[] = [];
+
+    for (let i = 0; i < 7; i++) {
+      const dataAtual = addDays(hoje, i);
+      const horariosDoDia: string[] = [];
+
+      for (let hora = 8; hora <= 13; hora++) {
+        const horarioFormatado = `${String(hora).padStart(2, '0')}:00`;
+
+        // --- PASSO 2: VERIFICAÇÃO ---
+        // Cria a mesma chave para o horário que estamos gerando agora.
+        const chaveVerificacao = format(dataAtual, `yyyy-MM-dd ${horarioFormatado}`);
+
+        // Adiciona o horário à lista apenas se ele NÃO estiver no Set de indisponíveis.
+        if (!indisponiveisSet.has(chaveVerificacao)) {
+          horariosDoDia.push(horarioFormatado);
+        }
+      }
+
+      // Adiciona o dia à agenda somente se ele ainda tiver horários disponíveis.
+      // (Opcional, mas evita retornar dias completamente lotados).
+      if (horariosDoDia.length > 0) {
+        agendaSeteDias.push({
+          data: format(dataAtual, 'yyyy-MM-dd'),
+          diaSemana: format(dataAtual, 'EEEE', { locale: ptBR }),
+          horarios: horariosDoDia,
+        });
+      }
+    }
+    console.log('agendaSeteDias', agendaSeteDias);
+
+    return agendaSeteDias;
+  }
+
   async generateResponse(dto: ChatRequestDto): Promise<{ resposta: string }> {
+    const userId = dto.userId;
     const todosPassos = await this.prisma.fluxoPasso.findMany({});
+
     if (todosPassos.length === 0) {
       throw new NotFoundException('Nenhum passo de fluxo encontrado.');
     }
@@ -196,6 +261,7 @@ ${contexto}
 
     const functionCall = extractFunctionCall(initialResponse);
     let respostaIA = '';
+    console.log('functionCall', functionCall);
 
     if (functionCall && functionCall.name === 'findByNomeOuEspecialidade') {
       const termo = functionCall.args.termo as string;
@@ -225,23 +291,17 @@ ${contexto}
       if (!medico) {
         respostaIA = `Não encontrei nenhum médico com "${termo}".`;
       } else {
-        
+
         const userId = medico.perfilMedico?.id!;
         const consultas = await this.consultasService.findAll(userId);
-        
+        console.log('consultas', consultas);
+
         const bookedStarts = (consultas ?? []).map(
-          (c: any) => c.data_hora_inicio ?? c.dataHoraInicio,
+          (c: any) => c.dataHoraInicio.toISOString(),
         );
+        console.log('bookedStarts', bookedStarts);
 
-        const calendario = montarCalendarioDisponivelPorConsultas(
-          (consultas ?? []).map(
-            (c: any) => c.data_hora_inicio ?? c.dataHoraInicio,
-          ),
-          30, 
-          10, 
-          8, 
-        );
-
+        const calendario = this.listarDisponiveis(bookedStarts);
         respostaIA = JSON.stringify(
           {
             medico: {

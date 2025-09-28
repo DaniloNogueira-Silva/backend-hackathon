@@ -7,5 +7,9 @@ export class ChatRequestDto {
 
   @IsString()
   @IsNotEmpty()
-  sessionId: string; 
+  sessionId: string;
+
+  @IsString()
+  @IsNotEmpty()
+  userId: string;
 }
