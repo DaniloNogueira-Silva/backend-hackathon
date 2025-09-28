@@ -18,18 +18,17 @@ import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 @Controller('chat')
 @UsePipes(new ValidationPipe({ transform: true }))
 export class ChatController {
-  constructor(private readonly chatService: ChatService) { }
+  constructor(private readonly chatService: ChatService) {}
 
   @Post('start')
   async startChat(@Body() dto: NewChatRequestDto, @Request() req) {
     try {
       const newSessionId = randomUUID();
       const userId = req.user.perfilId;
-      
       const respostaCompleta = await this.chatService.generateResponse({
         sessionId: newSessionId,
         pergunta: dto.pergunta,
-        userId
+        userId,
       });
 
       return {

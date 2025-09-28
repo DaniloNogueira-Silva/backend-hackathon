@@ -13,6 +13,7 @@ import {
   horarioMedicoTool,
   montarCalendarioDisponivel,
   montarCalendarioDisponivelPorConsultas,
+  consultaTool,
 } from './utils';
 import { ConsultasService } from 'src/consultas/consultas.service';
 import { DiaDisponivel } from './interface/dia.disponivel.interface';
@@ -30,6 +31,7 @@ export class ChatService {
     functionDeclarations: [
       ...buscaMedicoTool.functionDeclarations,
       ...horarioMedicoTool.functionDeclarations,
+      ...consultaTool.functionDeclarations,
     ],
   };
 
@@ -92,6 +94,10 @@ Não fale o número do passo.
 REGRAS DE CLASSIFICAÇÃO DE FLUXO:
 - Se a pergunta for CLARA sobre um único processo (ex: "Quero 2ª via"), responda diretamente usando APENAS os passos daquele processo.
 - Se a pergunta for AMBÍGUA ou genérica de fluxo, você DEVE pedir esclarecimento (ex: liste as opções de fluxos relevantes).
+REGRAS IMPORTANTES DO AGENDAMENTO:
+- Se o usuário informar apenas mês/dia e hora (ex.: "29-09 às 11"), ASSUMA o ano atual (${new Date().getFullYear()}).
+- Sempre converta a data/hora para formato ISO 8601 antes de responder ou chamar funções.
+
 
 --- CONTEXTO ESTRUTURADO DO FLUXO ---
 ${contexto}
@@ -189,7 +195,6 @@ ${contexto}
       try {
         const dataObj = parseISO(dataIso);
 
-
         const ano = dataObj.getUTCFullYear();
         const mes = String(dataObj.getUTCMonth() + 1).padStart(2, '0');
         const dia = String(dataObj.getUTCDate()).padStart(2, '0');
@@ -214,7 +219,10 @@ ${contexto}
 
         // --- PASSO 2: VERIFICAÇÃO ---
         // Cria a mesma chave para o horário que estamos gerando agora.
-        const chaveVerificacao = format(dataAtual, `yyyy-MM-dd ${horarioFormatado}`);
+        const chaveVerificacao = format(
+          dataAtual,
+          `yyyy-MM-dd ${horarioFormatado}`,
+        );
 
         // Adiciona o horário à lista apenas se ele NÃO estiver no Set de indisponíveis.
         if (!indisponiveisSet.has(chaveVerificacao)) {
@@ -238,6 +246,7 @@ ${contexto}
   }
 
   async generateResponse(dto: ChatRequestDto): Promise<{ resposta: string }> {
+    console.log("dasdadas")
     const userId = dto.userId;
     const todosPassos = await this.prisma.fluxoPasso.findMany({});
 
@@ -291,13 +300,12 @@ ${contexto}
       if (!medico) {
         respostaIA = `Não encontrei nenhum médico com "${termo}".`;
       } else {
-
         const userId = medico.perfilMedico?.id!;
         const consultas = await this.consultasService.findAll(userId);
         console.log('consultas', consultas);
 
-        const bookedStarts = (consultas ?? []).map(
-          (c: any) => c.dataHoraInicio.toISOString(),
+        const bookedStarts = (consultas ?? []).map((c: any) =>
+          c.dataHoraInicio.toISOString(),
         );
         console.log('bookedStarts', bookedStarts);
 
@@ -314,6 +322,29 @@ ${contexto}
           null,
           2,
         );
+      }
+    } else if (functionCall && functionCall.name === 'marcarConsulta') {
+      const { crm, dataHoraInicio } = functionCall.args;
+      console.log(userId)
+      const pacienteId = userId; 
+      const medico = await this.medicosService.findByCRM(crm);
+
+      if (!medico) {
+        respostaIA = `Não encontrei médico com CRM ${crm}.`;
+      } else {
+        const medicoId = medico.perfilMedico?.id;
+        if (!medicoId) {
+          respostaIA = `Não consegui identificar o médico com CRM ${crm}.`;
+        } else {
+          console.log("user: ",userId)
+          const consulta = await this.consultasService.create({
+            dataHoraInicio: new Date(dataHoraInicio).toISOString(),
+            pacienteId,
+            medicoId,
+          });
+
+          respostaIA = `Consulta marcada com sucesso com Dr(a). ${medico.nome}, CRM ${crm}, para ${dataHoraInicio}.`;
+        }
       }
     } else {
       respostaIA = extractText(initialResponse);

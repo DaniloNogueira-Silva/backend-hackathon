@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsString, IsNumber } from 'class-validator';
+import { IsNotEmpty, IsString, IsNumber, IsOptional } from 'class-validator';
 
 export class ChatRequestDto {
   @IsString()
@@ -10,6 +10,6 @@ export class ChatRequestDto {
   sessionId: string;
 
   @IsString()
-  @IsNotEmpty()
+  @IsOptional()
   userId: string;
 }

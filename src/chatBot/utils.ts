@@ -239,3 +239,28 @@ export function montarCalendarioDisponivelPorConsultas(
 
   return calendario;
 }
+
+export const marcarConsultaDeclaration: GenAIFunctionDeclaration = {
+  name: 'marcarConsulta',
+  description:
+    'Agenda uma consulta para um paciente com um médico em um horário disponível.',
+  parameters: {
+    type: 'OBJECT',
+    properties: {
+      crm: {
+        type: 'STRING',
+        description: 'CRM do médico.',
+      },
+      dataHoraInicio: {
+        type: 'STRING',
+        description:
+          'Data/hora no formato ISO 8601 para o início da consulta (ex.: 2025-09-28T10:00:00-03:00).',
+      },
+    },
+    required: ['crm', 'dataHoraInicio'],
+  },
+};
+
+export const consultaTool: GenAITool = {
+  functionDeclarations: [marcarConsultaDeclaration],
+};
