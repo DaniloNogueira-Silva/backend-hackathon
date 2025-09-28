@@ -1,4 +1,4 @@
-curl -X POST http://localhost:3000/medicos \
+curl -X POST http://localhost:3001/medicos \
 -H "Content-Type: application/json" \
 -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImpvYW8ucGFjaWVudGVAZW1haWwuY29tIiwic3ViIjoiNmY0N2NiZTQtMWI4OS00MGEyLWFlMWItOTc3OThmMDE3NGZkIiwicGVyZmlsIjoiUEFDSUVOVEUiLCJpYXQiOjE3NTg5OTMzNDEsImV4cCI6MTc1OTA3OTc0MX0.EAYDh_DRFY3o633ghOhB2HhHz-VApLA0Yp1KazJyRaI" \
 -d '{
@@ -13,15 +13,15 @@ curl -X POST http://localhost:3000/medicos \
 
 ###
 
-curl -X GET http://localhost:3000/medicos \
+curl -X GET http://localhost:3001/medicos \
 -H "Content-Type: application/json" \
 -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImpvYW8ucGFjaWVudGVAZW1haWwuY29tIiwic3ViIjoiNmY0N2NiZTQtMWI4OS00MGEyLWFlMWItOTc3OThmMDE3NGZkIiwicGVyZmlsIjoiUEFDSUVOVEUiLCJpYXQiOjE3NTg5OTMzNDEsImV4cCI6MTc1OTA3OTc0MX0.EAYDh_DRFY3o633ghOhB2HhHz-VApLA0Yp1KazJyRaI" 
 ###
 
-curl "http://localhost:3000/medicos?especialidade=Neurologista"
+curl "http://localhost:3001/medicos?especialidade=Neurologista"
 -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImpvYW8ucGFjaWVudGVAZW1haWwuY29tIiwic3ViIjoiNmY0N2NiZTQtMWI4OS00MGEyLWFlMWItOTc3OThmMDE3NGZkIiwicGVyZmlsIjoiUEFDSUVOVEUiLCJpYXQiOjE3NTg5OTMzNDEsImV4cCI6MTc1OTA3OTc0MX0.EAYDh_DRFY3o633ghOhB2HhHz-VApLA0Yp1KazJyRaI" 
 
 ###
 
-curl "http://localhost:3000/medicos/buscar?nome=carlos&especialidade=Neurologista"
+curl "http://localhost:3001/medicos/buscar?nome=carlos&especialidade=Neurologista"
 -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImpvYW8ucGFjaWVudGVAZW1haWwuY29tIiwic3ViIjoiNmY0N2NiZTQtMWI4OS00MGEyLWFlMWItOTc3OThmMDE3NGZkIiwicGVyZmlsIjoiUEFDSUVOVEUiLCJpYXQiOjE3NTg5OTMzNDEsImV4cCI6MTc1OTA3OTc0MX0.EAYDh_DRFY3o633ghOhB2HhHz-VApLA0Yp1KazJyRaI" 

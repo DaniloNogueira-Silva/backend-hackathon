@@ -1,4 +1,4 @@
-curl -X POST http://localhost:3000/chat/start \
+curl -X POST http://localhost:3001/chat/start \
 -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImNlY2lsaWEubmFpckBlbWFpbC5jb20iLCJzdWIiOiJmZDg3NGEwNC04MmY1LTQ5ZDItYTZkNC1hYTE0Y2Q3ZGJhYmQiLCJwZXJmaWwiOiJQQUNJRU5URSIsInBlcmZpbElkIjoiZjg1NWJhZDEtNThjMC00M2FmLWIzODgtYzQ5ZTEwMDRhZjM3IiwiaWF0IjoxNzU5MDIwMzAzLCJleHAiOjE3NTkxMDY3MDN9.bfQDrTp6YNH68tAJ8sknbEAyZzBxcsdU5kg5LthRmYQ" \
 -H "Content-Type: application/json" \
 -d '{
@@ -7,7 +7,7 @@ curl -X POST http://localhost:3000/chat/start \
 
 ###
 
-curl -X POST http://localhost:3000/chat/agendamento \
+curl -X POST http://localhost:3001/chat/agendamento \
 -H "Content-Type: application/json" \
 -d '{
     "pergunta": "Sim"
