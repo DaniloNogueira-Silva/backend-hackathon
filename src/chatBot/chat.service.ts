@@ -76,6 +76,36 @@ export class ChatService {
     return contexto.trim();
   }
 
+  public async generateSessionName(pergunta: string): Promise<string> {
+    try {
+      const prompt = `Gere um nome para esta conversa, que seja conciso (máximo 5 palavras) e baseado na seguinte pergunta: "${pergunta}". O nome deve ser em português e relevante ao assunto.`;
+
+      const response = await this.ai
+        .getGenerativeModel({ model: 'gemini-2.5-flash' }) // Pode-se usar o mesmo modelo ou um mais leve
+        .generateContent({
+          contents: [{ role: 'user', parts: [{ text: prompt }] }],
+        });
+
+      let nomeGerado = response.response
+        .text()
+        .trim()
+        .replace(/^['"]|['"]$/g, '');
+
+      // Trunca para garantir um tamanho máximo
+      const palavras = nomeGerado.split(/\s+/);
+      if (palavras.length > 5) {
+        nomeGerado = palavras.slice(0, 5).join(' ');
+      }
+
+      return (
+        nomeGerado.charAt(0).toUpperCase() + nomeGerado.slice(1).toLowerCase()
+      );
+    } catch (error) {
+      console.error('Erro ao gerar nome da sessão:', error);
+      return 'Nova Conversa';
+    }
+  }
+
   private async getOrCreateChatSession(
     sessionId: string,
     contexto: string,
@@ -190,8 +220,6 @@ ${contexto}
   public listarDisponiveis(
     horariosIndisponiveis: string[] = [],
   ): DiaDisponivel[] {
-    console.log('horariosIndisponiveis', horariosIndisponiveis);
-
     const indisponiveisSet = new Set<string>();
 
     horariosIndisponiveis.forEach((dataIso) => {
@@ -343,7 +371,7 @@ ${contexto}
 
           const dataComSubtracao = subHours(dataOriginal, 3);
 
-          await this.consultasService.create({
+          const consulta = await this.consultasService.create({
             dataHoraInicio: dataComSubtracao.toISOString(),
             pacienteId,
             medicoId,

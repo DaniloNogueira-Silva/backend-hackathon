@@ -30,8 +30,13 @@ export class ChatController {
         pergunta: dto.pergunta,
       });
 
+      const sessionName = await this.chatService.generateSessionName(
+        dto.pergunta,
+      );
+
       return {
         sessionId: newSessionId,
+        sessionName: sessionName,
         resposta: respostaCompleta.resposta,
       };
     } catch (error) {
