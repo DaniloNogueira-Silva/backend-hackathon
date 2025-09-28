@@ -324,30 +324,14 @@ ${contexto}
 
     try {
       if (pdfFile) {
-        // 1. O PDF foi enviado: Executa a função do backend (autorizacoesExameService)
 
         const result =
           await this.autorizacoesExameService.processarPdfEExtrairDados(
             pdfFile,
           );
 
-        // O Gemini espera um objeto de resposta. Envia a lista completa de exames.
-        const functionResult = {
-          functionResponse: {
-            name: 'processarPdfEExtrairDados',
-            response: {
-              exames: result, // Envia a lista de exames/autorizações para a IA
-            },
-          },
-        };
-
-        // Envia o resultado da execução da função de volta para a IA
-        initialResponse = await chatSession.sendMessage({
-          role: 'function',
-          parts: [{ functionResponse: functionResult.functionResponse }],
-        } as any);
+          return result;
       } else {
-        // 2. Não há PDF, é uma mensagem normal do usuário ou a primeira interação
         initialResponse = await chatSession.sendMessage(dto.pergunta);
       }
     } catch (error) {

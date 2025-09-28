@@ -7,10 +7,12 @@ import { MedicosModule } from 'src/medicos/medicos.module';
 import { ConsultasModule } from 'src/consultas/consultas.module';
 import { UsuariosModule } from 'src/usuarios/usuarios.module';
 import { AutorizacoesExameModule } from 'src/autorizacoes-exame/autorizacoes-exame.module';
+import { AgendamentoChatService } from './agendamento.service';
 
 @Module({
   imports: [ConfigModule, MedicosModule, ConsultasModule, UsuariosModule, AutorizacoesExameModule], 
   controllers: [ChatController],
-  providers: [ChatService, PrismaService], 
+  providers: [ChatService, PrismaService, AgendamentoChatService
+  ] , 
 })
 export class ChatModule {}
