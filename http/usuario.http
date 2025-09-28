@@ -1,5 +1,5 @@
 
-curl -X POST http://localhost:3000/auth/login \
+curl -X POST http://localhost:3001/auth/login \
 -H "Content-Type: application/json" \
 -d '{
   "email": "cecilia.nair@email.com",
@@ -9,7 +9,7 @@ curl -X POST http://localhost:3000/auth/login \
 
 ###
 
-curl -X POST http://localhost:3000/usuarios \
+curl -X POST http://localhost:3001/usuarios \
 -H "Content-Type: application/json" \
 -d '{
   "email": "cecilia.nair@email.com",
@@ -27,7 +27,7 @@ curl -X POST http://localhost:3000/usuarios \
 
 ###
 
-curl -X GET http://localhost:3000/usuarios
+curl -X GET http://localhost:3001/usuarios
 -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImpvYW8ucGFjaWVudGVAZW1haWwuY29tIiwic3ViIjoiNmY0N2NiZTQtMWI4OS00MGEyLWFlMWItOTc3OThmMDE3NGZkIiwicGVyZmlsIjoiUEFDSUVOVEUiLCJpYXQiOjE3NTg5OTMzNDEsImV4cCI6MTc1OTA3OTc0MX0.EAYDh_DRFY3o633ghOhB2HhHz-VApLA0Yp1KazJyRaI"
 
 ###

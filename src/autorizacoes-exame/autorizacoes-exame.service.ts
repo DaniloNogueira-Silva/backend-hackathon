@@ -36,6 +36,7 @@ export class AutorizacoesExameService {
     try {
       const data = await pdf(pdfFile.buffer);
       const informacoesLimpas = this.extrairInformacoesEssenciais(data.text);
+        this.logger.log(`informacoesLimpas , ${JSON.stringify(informacoesLimpas, null, 2)}`);
 
       let procedimentosParaCriar: any = [];
       const terminologiasComErro: any[] = [];
@@ -79,15 +80,9 @@ export class AutorizacoesExameService {
       }
 
       const crm = informacoesLimpas.crm!;
-      const paciente = informacoesLimpas.nome!;
 
       const medico = await this.medicosService.findByCRM(crm);
-      const pacienteEncontrado = await this.pacientesService.findByName(paciente);
-
-      if (!pacienteEncontrado) {
-        throw new Error('Paciente nao encontrado');
-      }
-
+      
       if (!medico) {
         throw new Error('Medico nao encontrado');
       }
@@ -109,7 +104,6 @@ export class AutorizacoesExameService {
 
         const novaAutorizacao = await this.prisma.autorizacaoExame.create({
           data: {
-            pacienteId: pacienteEncontrado?.perfilPaciente?.id!,
             medicoId: medico?.perfilMedico?.id!,
             protocolo: randomBytes(8).toString('hex'),
             codigo: procedimento.codigo,
@@ -185,16 +179,6 @@ export class AutorizacoesExameService {
         criadoEm: true,
         liberadoEm: true,
         codigo: true,
-
-        paciente: {
-          select: {
-            usuario: {
-              select: {
-                nome: true,
-              },
-            },
-          },
-        },
         medico: {
           select: {
             usuario: {
@@ -204,20 +188,14 @@ export class AutorizacoesExameService {
             },
           },
         },
-      },
-      where: {
-        OR: [
-          { pacienteId: userId },
-          { medicoId: userId },
-        ],
-      },
+      }
     });
   }
 
   async findOne(id: string) {
     return this.prisma.autorizacaoExame.findUnique({
       where: { id },
-      include: { paciente: true, medico: true, consulta: true },
+      include: { medico: true, consulta: true },
     });
   }
 

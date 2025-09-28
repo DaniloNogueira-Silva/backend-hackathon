@@ -1,4 +1,4 @@
-curl -X POST http://localhost:3000/consultas \
+curl -X POST http://localhost:3001/consultas \
 -H "Content-Type: application/json" \
 -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImpvYW8ucGFjaWVudGVAZW1haWwuY29tIiwic3ViIjoiNmY0N2NiZTQtMWI4OS00MGEyLWFlMWItOTc3OThmMDE3NGZkIiwicGVyZmlsIjoiUEFDSUVOVEUiLCJpYXQiOjE3NTg5OTMzNDEsImV4cCI6MTc1OTA3OTc0MX0.EAYDh_DRFY3o633ghOhB2HhHz-VApLA0Yp1KazJyRaI" \
 -d '{
@@ -9,12 +9,12 @@ curl -X POST http://localhost:3000/consultas \
 
 ###
 
-curl -X GET http://localhost:3000/consultas \
+curl -X GET http://localhost:3001/consultas \
 -H "Content-Type: application/json" \
 -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImpvYW8ucGFjaWVudGVAZW1haWwuY29tIiwic3ViIjoiNmY0N2NiZTQtMWI4OS00MGEyLWFlMWItOTc3OThmMDE3NGZkIiwicGVyZmlsIjoiUEFDSUVOVEUiLCJwZXJmaWxJZCI6ImVjNWNlOTkyLWY4NzAtNDhiOS05ODMxLTM1ZDc5Y2E5YWZjYyIsImlhdCI6MTc1OTAwODM5NiwiZXhwIjoxNzU5MDk0Nzk2fQ.cpk352qzuH6CXtgYTGq4_uyyJjkaWVaD1bSeqtuIC2s" \
 
 ###
 
-curl -X GET http://localhost:3000/consultas/8cb823f3-cfc8-4bbd-9e34-6f456f997a4c \
+curl -X GET http://localhost:3001/consultas/8cb823f3-cfc8-4bbd-9e34-6f456f997a4c \
 -H "Content-Type: application/json" \
 -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImpvYW8ucGFjaWVudGVAZW1haWwuY29tIiwic3ViIjoiNmY0N2NiZTQtMWI4OS00MGEyLWFlMWItOTc3OThmMDE3NGZkIiwicGVyZmlsIjoiUEFDSUVOVEUiLCJpYXQiOjE3NTg5OTMzNDEsImV4cCI6MTc1OTA3OTc0MX0.EAYDh_DRFY3o633ghOhB2HhHz-VApLA0Yp1KazJyRaI" \
