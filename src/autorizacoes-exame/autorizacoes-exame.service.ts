@@ -38,26 +38,50 @@ export class AutorizacoesExameService {
       const informacoesLimpas = this.extrairInformacoesEssenciais(data.text);
 
       let procedimentosParaCriar: any = [];
+      const terminologiasComErro: any[] = [];
 
       if (informacoesLimpas.procedimento) {
-        const listaProcedimentos = informacoesLimpas.procedimento.split('\n');
+        const listaProcedimentos = informacoesLimpas.procedimento.split('\n').filter(p => p.trim() !== '');
 
         this.logger.log(`Encontrados ${listaProcedimentos.length} procedimentos para buscar...`);
 
-        const promessasDeBusca = listaProcedimentos.map(proc =>
-          this.rolProcedimentosService.findByTerminologia(proc.trim())
-        );
+        // Mapeia cada procedimento para um objeto de resultado (sucesso ou erro)
+        const promessasDeBusca = listaProcedimentos.map(async (proc) => {
+          const terminologia = proc.trim();
+          const resultadoBusca = await this.rolProcedimentosService.findByTerminologia(terminologia);
 
-        const resultadosDaBusca = await Promise.all(promessasDeBusca);
+          if (resultadoBusca && resultadoBusca.length > 0) {
+            // Sucesso: retorna os dados encontrados
+            return { status: 'sucesso', data: resultadoBusca };
+          } else {
+            // Erro: retorna a terminologia e a mensagem de erro padrão
+            return {
+              status: 'erro',
+              terminologia: terminologia,
+              error: "Não encontrado na planilha de auditoria por conta de um erro de digitação",
+            };
+          }
+        });
 
-        procedimentosParaCriar = resultadosDaBusca.flat();
+        const resultadosMapeados = await Promise.all(promessasDeBusca);
+
+        // Separa os resultados em duas listas: os encontrados e os com erro
+        resultadosMapeados.forEach(resultado => {
+          if (resultado.status === 'sucesso') {
+            procedimentosParaCriar.push(...resultado.data!);
+          } else {
+            terminologiasComErro.push({
+              nome: resultado.terminologia,
+              error: resultado.error,
+            });
+          }
+        });
       }
 
       const crm = informacoesLimpas.crm!;
       const paciente = informacoesLimpas.nome!;
 
       const medico = await this.medicosService.findByCRM(crm);
-
       const pacienteEncontrado = await this.pacientesService.findByName(paciente);
 
       if (!pacienteEncontrado) {
@@ -68,27 +92,29 @@ export class AutorizacoesExameService {
         throw new Error('Medico nao encontrado');
       }
 
-      const autorizacoesCriadas: any = [];
+      const autorizacoesCriadas: any[] = [];
+      // Itera apenas sobre os procedimentos que foram encontrados com sucesso
       for (const procedimento of procedimentosParaCriar) {
-
         let dataLiberacao: Date | null = null;
         const hoje = new Date();
 
-        if (procedimento.tipo === 'Sem Autorização') {
-          dataLiberacao = hoje;
+        if (procedimento.tipo === 'Sem Auditoria') {
+          dataLiberacao = new Date();
         } else if (procedimento.tipo === 'Auditoria') {
-          dataLiberacao = new Date(hoje.setDate(hoje.getDate() + 5));
+          // Cria uma nova data para não modificar a referência 'hoje'
+          dataLiberacao = new Date(new Date().setDate(hoje.getDate() + 5));
         } else if (procedimento.tipo === 'OPME') {
-          dataLiberacao = new Date(hoje.setDate(hoje.getDate() + 10));
+          dataLiberacao = new Date(new Date().setDate(hoje.getDate() + 10));
         }
 
         const novaAutorizacao = await this.prisma.autorizacaoExame.create({
           data: {
             pacienteId: pacienteEncontrado?.perfilPaciente?.id!,
             medicoId: medico?.perfilMedico?.id!,
+            protocolo: randomBytes(8).toString('hex'),
             codigo: procedimento.codigo,
             exame: procedimento.terminologia,
-            status: procedimento.tipo === 'Sem Autorização'
+            status: procedimento.tipo === 'Sem Auditoria'
               ? StatusAutorizacao.APROVADA
               : StatusAutorizacao.PENDENTE,
             tipo: procedimento.tipo,
@@ -98,7 +124,11 @@ export class AutorizacoesExameService {
         autorizacoesCriadas.push(novaAutorizacao);
       }
 
-      return autorizacoesCriadas;
+      // Retorna um objeto com ambas as listas
+      return {
+        autorizacoesCriadas,
+        erros: terminologiasComErro,
+      };
 
     } catch (error) {
       this.logger.error('Erro ao processar o arquivo PDF', error.stack);

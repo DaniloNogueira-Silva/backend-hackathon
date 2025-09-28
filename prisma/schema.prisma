@@ -40,8 +40,8 @@ model Usuario {
   criadoEm     DateTime @default(now()) @map("criado_em")
   atualizadoEm DateTime @updatedAt @map("atualizado_em")
 
-  perfilPaciente   PerfilPaciente?
-  perfilMedico     PerfilMedico?
+  perfilPaciente PerfilPaciente?
+  perfilMedico   PerfilMedico?
 
   @@map("usuarios")
 }
@@ -149,15 +149,15 @@ model Consulta {
 }
 
 model AutorizacaoExame {
-  id         String            @id @default(uuid())
-  codigo     String            @unique // Um código único para a autorização, ex: "AUT-2025-ABCD"
-  exame      String
-  status     StatusAutorizacao @default(PENDENTE)
-  tipo       String
-  liberadoEm DateTime?         @map("liberado_em")
-
-  criadoEm     DateTime @default(now()) @map("criado_em")
-  atualizadoEm DateTime @updatedAt @map("atualizado_em")
+  id           String            @id @default(uuid())
+  codigo       String            @unique // Um código único para a autorização, ex: "AUT-2025-ABCD"
+  exame        String
+  status       StatusAutorizacao @default(PENDENTE)
+  tipo         String
+  liberadoEm   DateTime?         @map("liberado_em")
+  protocolo    String?
+  criadoEm     DateTime          @default(now()) @map("criado_em")
+  atualizadoEm DateTime          @updatedAt @map("atualizado_em")
 
   // Relacionamento com o Paciente (Usuario)
   pacienteId String         @map("paciente_id")
